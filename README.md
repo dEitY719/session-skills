@@ -28,6 +28,20 @@ this repo owns no shared assets — it links out for the
 | `worktree-spawn` | `/session:worktree-spawn [--ai <name>] [--task <slug>] [--base <ref>] [<branch>]` | Creates `../<project>-<agent>-<N>` on a `wt/<agent>/<N>` branch so parallel agents do not collide. Detects the agent, picks the next free index, resolves the base ref, and handles `git-crypt` repos. |
 | `worktree-teardown` | `/session:worktree-teardown <worktree-path> [--force] [--keep-branch] [--dry-run]` | Removes the worktree, syncs main, deletes the branch. **The destructive one** — blocks on uncommitted or unpushed work unless you pass `--force`. |
 
+### Visual guides and worked examples (GitHub Pages)
+
+- `restart` — [visual guide](https://deity719.github.io/session-skills/skill-guides/restart.html) · [usage example](https://deity719.github.io/session-skills/skill-output/restart-usage.html) (dead turn to resumed work in the same session)
+- `close` — [visual guide](https://deity719.github.io/session-skills/skill-guides/close.html) · [usage example](https://deity719.github.io/session-skills/skill-output/close-usage.html) (session state to an OK/BLOCKED verdict)
+- `handoff` — [visual guide](https://deity719.github.io/session-skills/skill-guides/handoff.html) · [usage example](https://deity719.github.io/session-skills/skill-output/handoff-usage.html) (unfinished work to an issue comment and a resume sentence)
+- `rate-limit-guard` — [visual guide](https://deity719.github.io/session-skills/skill-guides/rate-limit-guard.html) · [usage example](https://deity719.github.io/session-skills/skill-output/rate-limit-guard-usage.html) (a reset time to a durable cron and a state file)
+- `resume-after-limit` — [visual guide](https://deity719.github.io/session-skills/skill-guides/resume-after-limit.html) · [usage example](https://deity719.github.io/session-skills/skill-output/resume-after-limit-usage.html) (that state file to the re-run command)
+- `schedule` — [visual guide](https://deity719.github.io/session-skills/skill-guides/schedule.html) · [usage example](https://deity719.github.io/session-skills/skill-output/schedule-usage.html) (a command plus a delay to a one-shot cron)
+- `worktree-spawn` — [visual guide](https://deity719.github.io/session-skills/skill-guides/worktree-spawn.html) · [usage example](https://deity719.github.io/session-skills/skill-output/worktree-spawn-usage.html) (a main repo to an isolated worktree and branch)
+- `worktree-teardown` — [visual guide](https://deity719.github.io/session-skills/skill-guides/worktree-teardown.html) · [usage example](https://deity719.github.io/session-skills/skill-output/worktree-teardown-usage.html) (a worktree path to a removed worktree and a synced main)
+
+Each page is generated from a Markdown source under
+[`docs/skill-guides/`](docs/skill-guides) and [`docs/skill-output/`](docs/skill-output).
+
 ### Two pairs worth knowing
 
 `rate-limit-guard` and `resume-after-limit` are one mechanism split across two

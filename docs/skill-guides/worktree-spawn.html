@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>session:worktree-spawn — 격리 워크트리 생성</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    /* ===== THEMES (class-based ONLY) ===== */
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.08);
+      --text: #EDEDED; --text-secondary: #8A8A8A;
+      --accent: #a3e635; --accent-secondary: #34d399;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+      --code-bg: #0F0F0F;
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.08);
+      --text: #0f172a; --text-secondary: #5b6472;
+      --accent: #4d7c0f; --accent-secondary: #047857;
+      --positive: #059669; --negative: #e11d48; --warning: #b45309;
+      --code-bg: #F4F4F3;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    h1,h2,h3,h4 { color: var(--text); letter-spacing: -0.03em; line-height: 1.12; text-wrap: balance; }
+    h1 { font-weight: 800; font-size: clamp(2.6rem, 7vw, 4rem); }
+    h2 { font-weight: 700; font-size: clamp(1.9rem, 4vw, 2.4rem); }
+    h3 { font-weight: 600; font-size: clamp(1.5rem, 3vw, 1.7rem); }
+    p, li, td, th, span, label { color: var(--text); font-weight: 400; font-size: 1rem; }
+    a { color: var(--accent); }
+    code, pre, .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+    code { background: var(--code-bg); border: 1px solid var(--border); border-radius: 5px;
+           padding: 0.12em 0.4em; font-size: 0.88em; }
+    .text-secondary { color: var(--text-secondary); }
+
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+    /* ===== HERO ===== */
+    .hero { padding: 88px 0 56px; border-bottom: 1px solid var(--border); }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem;
+      font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 20px; }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; background: var(--accent); border-radius: 2px; }
+    .hero h1 .cmd { color: var(--accent); }
+    .lede { margin-top: 20px; font-size: clamp(1.05rem, 2.2vw, 1.28rem); color: var(--text-secondary);
+      max-width: 62ch; line-height: 1.6; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600;
+      padding: 5px 11px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-secondary); }
+    .badge.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+    .badge.ok { color: var(--positive); border-color: color-mix(in srgb, var(--positive) 40%, transparent); }
+    .badge.warn { color: var(--warning); border-color: color-mix(in srgb, var(--warning) 45%, transparent); }
+    .badge.danger { color: var(--negative); border-color: color-mix(in srgb, var(--negative) 45%, transparent); }
+
+    /* ===== SECTIONS ===== */
+    section.blk { padding: 56px 0; border-bottom: 1px solid var(--border); }
+    section.blk:last-of-type { border-bottom: none; }
+    .kicker { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-secondary); margin-bottom: 12px; }
+    .blk > .wrap > h2 { margin-bottom: 8px; }
+    .blk-note { color: var(--text-secondary); margin-top: 10px; max-width: 66ch; }
+
+    /* ===== CARD ===== */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 24px; transition: box-shadow 0.2s ease; min-width: 0; }
+    .card:hover { box-shadow: 0 0 0 1px var(--border), 0 8px 20px rgba(0,0,0,0.10); }
+    .card h3 { font-size: 1.12rem; margin-bottom: 10px; }
+    .card p { color: var(--text-secondary); font-size: 0.96rem; }
+    .grid { display: grid; gap: 16px; margin-top: 26px; }
+    .grid.c2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .grid.c3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+    /* ===== USE / DONT-USE SPLIT ===== */
+    .split { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 26px; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px;
+      border-top: 3px solid var(--accent); }
+    .panel.no { border-top-color: var(--text-secondary); }
+    .panel h3 { font-size: 1.05rem; margin-bottom: 14px; display: flex; align-items: center; gap: 9px; }
+    .panel ul { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .panel li { position: relative; padding-left: 20px; color: var(--text-secondary); font-size: 0.95rem; }
+    .panel li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 7px; height: 7px;
+      border-radius: 2px; background: var(--accent); }
+    .panel.no li::before { background: var(--text-secondary); }
+    .panel li b { color: var(--text); font-weight: 600; }
+
+    /* ===== TABLE ===== */
+    .tbl-scroll { overflow-x: auto; margin-top: 22px; border: 1px solid var(--border); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); }
+    th, td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 0.94rem;
+      vertical-align: top; }
+    th { font-weight: 700; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text-secondary); background: var(--surface-hover); white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    td code { white-space: nowrap; }
+
+    /* ===== STEPS ===== */
+    .steps { margin-top: 26px; display: flex; flex-direction: column; gap: 2px; }
+    .step { display: grid; grid-template-columns: 44px 1fr; gap: 18px; padding: 16px 18px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      transition: box-shadow 0.2s ease; }
+    .step:hover { box-shadow: 0 0 0 1px var(--border), 0 6px 14px rgba(0,0,0,0.08); }
+    .step-n { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; font-weight: 600;
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+    .step-b h4 { font-size: 1rem; font-weight: 650; margin-bottom: 4px; }
+    .step-b p { color: var(--text-secondary); font-size: 0.94rem; }
+
+    /* ===== CODE BLOCK + COPY ===== */
+    .codewrap { position: relative; margin-top: 20px; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px 22px; overflow-x: auto; font-size: 0.9rem; line-height: 1.75; }
+    pre code { background: none; border: none; padding: 0; font-size: inherit; white-space: pre; }
+    .copy { position: absolute; top: 10px; right: 10px; background: var(--surface); color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: 7px; padding: 5px 10px; font-size: 0.74rem;
+      font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.15s; opacity: 0; }
+    .codewrap:hover .copy, .copy:focus { opacity: 1; }
+    .copy:hover { background: var(--surface-hover); color: var(--text); }
+    .copy.done { color: var(--positive); border-color: color-mix(in srgb, var(--positive) 45%, transparent); opacity: 1; }
+
+    /* ===== PIPELINE ===== */
+    .pipe { margin-top: 28px; display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap; }
+    .pipe-node { flex: 1 1 210px; min-width: 0; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px; text-align: center; }
+    .pipe-node.mid { border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+      background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+    .pipe-k { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-secondary); margin-bottom: 8px; }
+    .pipe-v { font-family: 'JetBrains Mono', monospace; font-size: 0.94rem; font-weight: 600;
+      word-break: break-word; }
+    .pipe-node.mid .pipe-v { color: var(--accent); }
+    .pipe-arrow { display: grid; place-items: center; color: var(--text-secondary); flex: 0 0 auto; }
+    @media (max-width: 720px) { .pipe-arrow svg { transform: rotate(90deg); } }
+
+    /* ===== CALLOUT ===== */
+    .callout { margin-top: 24px; border-radius: 12px; padding: 20px 22px;
+      border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--surface); }
+    .callout.warn { border-left-color: var(--warning); }
+    .callout.danger { border-left-color: var(--negative); }
+    .callout.ok { border-left-color: var(--positive); }
+    .callout h4 { font-size: 0.98rem; font-weight: 700; margin-bottom: 7px; }
+    .callout p { color: var(--text-secondary); font-size: 0.95rem; }
+    .callout p + p { margin-top: 9px; }
+
+    /* ===== CONSTRAINT LIST ===== */
+    .rules { list-style: none; margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .rules li { background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px 18px 16px 46px; position: relative; color: var(--text-secondary); font-size: 0.95rem; }
+    .rules li::before { content: ""; position: absolute; left: 18px; top: 21px; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--negative); }
+    .rules li b { color: var(--text); font-weight: 650; }
+
+    /* ===== FOOTER ===== */
+    footer { padding: 44px 0 64px; }
+    .foot { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;
+      color: var(--text-secondary); font-size: 0.88rem; }
+    .foot a { text-decoration: none; font-weight: 600; }
+    .foot a:hover { text-decoration: underline; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .animate.delay-1 { animation-delay: 0.08s; }
+    .animate.delay-2 { animation-delay: 0.16s; }
+    .animate.delay-3 { animation-delay: 0.24s; }
+    .animate.delay-4 { animation-delay: 0.32s; }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    /* ===== PRINT ===== */
+    @media print {
+      body { background: white !important; color: black !important; }
+      .viz-menu { display: none !important; }
+      .reveal { display: revert; opacity: 1 !important; transform: none !important; }
+      .card, .panel, .step, .callout { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+      section.blk { break-inside: auto; padding: 24px 0; }
+      .copy { display: none !important; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; }
+
+    /* ===== MENU ===== */
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle { width: 44px; height: 44px; border-radius: 12px; background: var(--surface);
+      border: 1px solid var(--border); color: var(--text); cursor: pointer; display: flex;
+      align-items: center; justify-content: center; backdrop-filter: blur(12px); transition: all 0.2s; }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown { position: absolute; top: 52px; right: 0; min-width: 208px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 12px; padding: 8px; opacity: 0; visibility: hidden;
+      transform: translateY(-8px); transition: all 0.2s; backdrop-filter: blur(16px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
+    .viz-menu-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+    .viz-menu-dropdown button { width: 100%; padding: 10px 14px; border: none; border-radius: 8px;
+      background: transparent; color: var(--text); font-size: 14px; font-family: inherit; cursor: pointer;
+      text-align: left; display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown svg { flex: 0 0 auto; color: var(--text-secondary); }
+
+    .skip-to-content { position: absolute; top: -40px; left: 6px; background: var(--accent); color: #fff;
+      padding: 8px 12px; text-decoration: none; border-radius: 4px; opacity: 0; pointer-events: none;
+      transition: all 0.2s; z-index: 10000; }
+    .skip-to-content:focus { top: 6px; opacity: 1; pointer-events: auto; }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
+
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="메뉴 열기" aria-haspopup="true" aria-expanded="false" id="vizMenuBtn">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+      </svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown" role="menu">
+      <button onclick="cycleTheme()" role="menuitem" aria-label="테마 전환">
+        <svg id="themeIcon" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M16.5 11.5A7 7 0 0 1 8.5 3.5a7 7 0 1 0 8 8Z"/></svg>
+        <span id="themeLabel">Dark</span>
+      </button>
+      <button onclick="downloadImage()" role="menuitem" aria-label="PNG 내려받기">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M3.5 14.5v1a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-1"/></svg>
+        <span>Download PNG</span>
+      </button>
+      <button onclick="window.print()" role="menuitem" aria-label="인쇄 또는 PDF 저장">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7V3h8v4M6 15H4.5A1.5 1.5 0 0 1 3 13.5v-4A1.5 1.5 0 0 1 4.5 8h11A1.5 1.5 0 0 1 17 9.5v4a1.5 1.5 0 0 1-1.5 1.5H14M6 12h8v5H6z"/></svg>
+        <span>Print / PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <main id="main-content" role="main">
+<header class="hero"><div class="wrap"><div class="eyebrow animate">session-skills / guide</div><h1 class="animate delay-1">/session:<span class="cmd">worktree-spawn</span></h1><p class="lede animate delay-2">같은 저장소에서 병렬로 도는 다른 에이전트와 충돌하지 않도록 격리된 워크트리와 전용 브랜치를 산출한다.</p><div class="badges animate delay-3"><span class="badge on">모든 하네스</span><span class="badge warn">메인 저장소에서만</span><span class="badge ">git-crypt 대응</span><span class="badge ">짝: worktree-teardown</span></div></div></header><section class="blk"><div class="wrap"><div class="kicker">경계</div><h2>언제 쓰고, 언제 안 쓰나</h2><div class="split" data-reveal><div class="panel"><h3>이럴 때 쓴다</h3><ul><li><b>병렬 작업을 시작</b>할 때 &mdash; &ldquo;새로운 작업 시작&rdquo;, &ldquo;격리된 작업 공간 만들어줘&rdquo;</li><li>한 저장소에 <b>여러 AI 에이전트</b>를 동시에 띄울 때</li></ul></div><div class="panel no"><h3>이럴 땐 다른 스킬</h3><ul><li>작업이 끝나 워크트리를 정리한다 &rarr; <code>session:worktree-teardown</code></li><li><b>이미 워크트리 안이다</b> &rarr; 스킬이 차단한다. 메인 저장소에서 실행할 것</li></ul></div></div></div></section><section class="blk"><div class="wrap"><div class="kicker">인터페이스</div><h2>호출 형식</h2><div class="codewrap" data-reveal><button class="copy" type="button" aria-label="코드 복사">Copy</button><pre><code>/session:worktree-spawn [--ai &lt;name&gt;] [--task &lt;slug&gt;] [--base &lt;ref&gt;] [&lt;branch&gt;]
+/session:worktree-spawn -h</code></pre></div><div class="tbl-scroll" data-reveal><table><thead><tr><th>인자</th><th>설명</th><th>기본값</th></tr></thead><tbody><tr><td><code>--ai &lt;name&gt;</code></td><td>에이전트 이름 강제 지정</td><td>자동 감지</td></tr><tr><td><code>--task &lt;slug&gt;</code></td><td>브랜치에 붙일 작업 슬러그. 한국어면 영문 슬러그로 변환 (소문자·하이픈·최대 30자)</td><td>없음</td></tr><tr><td><code>--base &lt;ref&gt;</code></td><td>베이스 ref 강제 지정</td><td>자동 해석</td></tr><tr><td><code>&lt;branch&gt;</code></td><td>명시 브랜치명 (그대로 사용)</td><td><code>wt/&lt;agent&gt;/&lt;N&gt;</code></td></tr></tbody></table></div></div></section><section class="blk"><div class="wrap"><div class="kicker">해석 규칙</div><h2>무엇이 어떻게 정해지나</h2><div class="grid c2" data-reveal><article class="card"><h3>에이전트</h3><p><code>--ai</code> &gt; <code>$AI_AGENT_NAME</code> &gt; 에이전트별 env var (<code>CLAUDECODE</code>, <code>AGY_CLI</code>, <code>CODEX_CLI</code>, <code>OPENCODE</code>, ...) &gt; <code>agent</code></p></article><article class="card"><h3>인덱스</h3><p>부모 디렉터리에서 <code>{project}-{agent}-N</code> 패턴을 훑어 <code>max(N)+1</code></p></article><article class="card"><h3>브랜치</h3><p>인자 없음 &rarr; <code>wt/{agent}/{N}</code><br><code>--task</code> &rarr; <code>wt/{agent}/{N}-{slug}</code><br>명시 브랜치 &rarr; 그대로</p></article><article class="card"><h3>베이스 ref</h3><p><code>--base</code> &gt; <code>origin/main</code> &gt; <code>main</code>/<code>master</code> &gt; 현재 <code>HEAD</code></p></article></div></div></section><section class="blk"><div class="wrap"><div class="kicker">동작</div><h2>주요 단계</h2><div class="steps" data-reveal><div class="step"><div class="step-n">1</div><div class="step-b"><h4>사전 조건 검증</h4><p>git 저장소인지, <b>워크트리 안이 아닌지</b>(맞으면 차단), dirty 상태 경고, 부모 디렉터리 쓰기 권한.</p></div></div><div class="step"><div class="step-n">1.5</div><div class="step-b"><h4>git-crypt 탐지</h4><p><code>filter.git-crypt.smudge</code> 설정 여부와 키 파일 해석 (<code>$GIT_CRYPT_KEY_FILE</code> &rarr; <code>~/.config/git-crypt/&lt;project&gt;.key</code> &rarr; <code>default.key</code>).</p></div></div><div class="step"><div class="step-n">3.5</div><div class="step-b"><h4>락 획득</h4><p><code>mkdir</code> 기반 원자적 락(<code>ai-worktree-spawn.lock</code>). stale 락은 10초 후 제거, 3회 재시도.</p></div></div><div class="step"><div class="step-n">6</div><div class="step-b"><h4>워크트리 생성</h4><p>키가 있으면 자동 unlock 4단계, 없으면 bypass 경로 &mdash; 필터 비활성, 암호화 파일은 바이너리 유지.</p></div></div><div class="step"><div class="step-n">7</div><div class="step-b"><h4>로그 기록</h4><p><code>$(git rev-parse --git-common-dir)/ai-worktree-spawn.log</code> 에 append.</p></div></div><div class="step"><div class="step-n">8</div><div class="step-b"><h4>리포트 후 이동</h4><p>결과를 찍고 새 워크트리로 <code>cd</code>.</p></div></div></div></div></section><section class="blk"><div class="wrap"><div class="kicker">계약</div><h2>주의사항과 제약</h2><ul class="rules" data-reveal><li><b>워크트리 안에서 실행하면 거부한다.</b> 메인 저장소에서만 돈다.</li><li><b>git-crypt 저장소에서는 명시적 <code>git add &lt;path&gt;</code> 를 쓴다</b> &mdash; <code>-A</code> 나 <code>.</code> 은 금지. 자동 unlock 된 파일이 raw-byte 대 textconv 불일치로 수정된 것처럼 보일 수 있다.</li><li><b>키 파일이 해석되지 않으면 추측하지 않고</b> bypass 경로로 물러난다.</li><li><b>로그·락 파일명은 <code>ai-worktree-spawn.{log,lock}</code> 으로 유지된다.</b> 명령 이름이 아니라 런타임 데이터 경로이며, 이름을 바꾸면 기존 로그가 고아가 되고 락이 갈라진다.</li><li><b>스크립트는 호출자의 cwd 를 바꿀 수 없다.</b> <code>cd</code> 명령을 안내로 출력하고, 에이전트가 직접 수행한다.</li></ul></div></section><footer><div class="wrap"><div class="foot"><span>출처: <code>docs/skill-guides/worktree-spawn.md</code> &mdash; dEitY719/session-skills</span><span><a href="../skill-output/worktree-spawn-usage.html">실행 예시 보기</a></span></div></div></footer>
+  </main>
+
+  <script>
+    function toggleMenu() {
+      var d = document.getElementById('vizMenuDropdown');
+      var b = document.getElementById('vizMenuBtn');
+      if (d) { d.classList.toggle('open'); if (b) b.setAttribute('aria-expanded', d.classList.contains('open')); }
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.viz-menu')) {
+        var d = document.getElementById('vizMenuDropdown');
+        var b = document.getElementById('vizMenuBtn');
+        if (d) { d.classList.remove('open'); if (b) b.setAttribute('aria-expanded', 'false'); }
+      }
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var d = document.getElementById('vizMenuDropdown');
+        var b = document.getElementById('vizMenuBtn');
+        if (d) { d.classList.remove('open'); if (b) b.setAttribute('aria-expanded', 'false'); }
+      }
+    });
+
+    var SUN = '<path d="M10 3.2V1.8M10 18.2v-1.4M16.8 10h1.4M1.8 10h1.4M14.8 5.2l1-1M4.2 15.8l1-1M14.8 14.8l1 1M4.2 4.2l1 1"/><circle cx="10" cy="10" r="3.6"/>';
+    var MOON = '<path d="M16.5 11.5A7 7 0 0 1 8.5 3.5a7 7 0 1 0 8 8Z"/>';
+    var savedTheme = localStorage.getItem('viz-theme');
+    var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      var i = document.getElementById('themeIcon'), l = document.getElementById('themeLabel');
+      if (i) i.innerHTML = t === 'dark' ? MOON : SUN;
+      if (l) l.textContent = t === 'dark' ? 'Dark' : 'Light';
+      localStorage.setItem('viz-theme', t);
+      currentTheme = t;
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+    // === Copy-to-clipboard on every code block (the page's core interaction) ===
+    document.querySelectorAll('.codewrap').forEach(function(w) {
+      var btn = w.querySelector('.copy'), pre = w.querySelector('pre');
+      if (!btn || !pre) return;
+      btn.addEventListener('click', function() {
+        navigator.clipboard.writeText(pre.innerText).then(function() {
+          var old = btn.textContent;
+          btn.textContent = 'Copied'; btn.classList.add('done');
+          setTimeout(function() { btn.textContent = old; btn.classList.remove('done'); }, 1400);
+        });
+      });
+    });
+
+    async function downloadImage() {
+      var menu = document.querySelector('.viz-menu');
+      menu.style.display = 'none';
+      try {
+        var url = await htmlToImage.toPng(document.body, { quality: 1, pixelRatio: 2,
+          backgroundColor: getComputedStyle(document.body).backgroundColor,
+          filter: function(n) { return !n.classList || !n.classList.contains('viz-menu'); } });
+        var a = document.createElement('a'); a.href = url;
+        a.download = document.title.replace(/[\s\/]+/g, '-').toLowerCase() + '.png'; a.click();
+      } catch (e) { console.error('Download failed:', e); }
+      menu.style.display = '';
+    }
+  </script>
+</body>
+</html>
