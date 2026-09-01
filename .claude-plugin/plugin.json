@@ -1,0 +1,22 @@
+{
+  "name": "session",
+  "description": "Eight skills grouped by when they fire rather than by what they touch: resuming an interrupted turn, closing or handing off a session, arming and firing the rate-limit safety net, deferring a command by N minutes, and creating or removing the isolated git worktree a session runs in",
+  "version": "0.1.0",
+  "author": {
+    "name": "dEitY719",
+    "url": "https://github.com/dEitY719"
+  },
+  "homepage": "https://github.com/dEitY719/session-skills",
+  "repository": "https://github.com/dEitY719/session-skills",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "plugin",
+    "marketplace",
+    "session",
+    "worktree",
+    "handoff",
+    "resume",
+    "rate-limit"
+  ]
+}

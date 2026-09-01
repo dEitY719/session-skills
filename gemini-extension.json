@@ -1,0 +1,6 @@
+{
+  "name": "session",
+  "description": "Resume, close, hand off, defer, and isolate a coding session — eight skills for the moments a session starts, stalls, or ends",
+  "version": "0.1.0",
+  "contextFileName": "GEMINI.md"
+}

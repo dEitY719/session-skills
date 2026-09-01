@@ -1,0 +1,22 @@
+{
+  "name": "session-skills",
+  "version": "0.1.0",
+  "description": "Skills for session lifecycle and workspace isolation — resume, close, handoff, rate-limit safety net, deferred execution, git worktree spawn and teardown",
+  "type": "module",
+  "main": ".opencode/plugins/session.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dEitY719/session-skills.git"
+  },
+  "keywords": [
+    "skills",
+    "plugin",
+    "marketplace",
+    "session",
+    "worktree",
+    "handoff",
+    "resume",
+    "rate-limit"
+  ]
+}

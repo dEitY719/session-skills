@@ -1,0 +1,44 @@
+{
+  "name": "session",
+  "version": "0.1.0",
+  "description": "Session lifecycle and workspace skills: resume an interrupted turn, audit or hand off a session, arm a rate-limit safety net, defer a command, and spawn or tear down an isolated git worktree.",
+  "author": {
+    "name": "dEitY719",
+    "url": "https://github.com/dEitY719"
+  },
+  "homepage": "https://github.com/dEitY719/session-skills",
+  "repository": "https://github.com/dEitY719/session-skills",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "plugin",
+    "marketplace",
+    "session",
+    "worktree",
+    "handoff",
+    "resume",
+    "rate-limit"
+  ],
+  "skills": "./skills/",
+  "hooks": {},
+  "interface": {
+    "displayName": "Session",
+    "shortDescription": "Resume, close, hand off, schedule, and isolate a coding session",
+    "longDescription": "Session bundles the eight skills that bracket a working session. restart picks up a turn that died to an API error, an OOM, an auth expiry, or an ESC, and resumes it in single-tool-call chunks. close audits four categories of leftover work read-only and prints an [OK] or [BLOCKED] verdict without touching the repo. handoff writes unfinished work into a tracking issue comment plus an agent-local memory file so the next session can resume from one sentence. rate-limit-guard arms a cron at the token-limit reset time and resume-after-limit is what that cron invokes; together they carry an overnight run across one or more reset windows. schedule defers any slash command by N minutes. worktree-spawn creates the isolated git worktree a parallel agent works in, and worktree-teardown removes it, deletes the branch, and syncs main. The three cron skills need Claude Code's CronCreate/CronDelete tools and cannot run elsewhere; the two worktree skills are plain git CLI and run everywhere.",
+    "developerName": "dEitY719",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Resume from where the last turn died.",
+      "Can I close this session, or is something unfinished?",
+      "Spawn a worktree for this issue."
+    ],
+    "websiteURL": "https://github.com/dEitY719/session-skills",
+    "brandColor": "#0EA5E9",
+    "screenshots": []
+  }
+}

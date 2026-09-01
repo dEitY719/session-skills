@@ -1,0 +1,20 @@
+{
+  "name": "session-skills",
+  "description": "Session lifecycle and workspace skills — resume an interrupted turn, audit or hand off a session before it ends, arm a rate-limit safety net, defer a command, and spawn or tear down isolated git worktrees",
+  "owner": {
+    "name": "dEitY719",
+    "url": "https://github.com/dEitY719"
+  },
+  "plugins": [
+    {
+      "name": "session",
+      "description": "Eight skills grouped by when they fire rather than by what they touch: resuming an interrupted turn, closing or handing off a session, arming and firing the rate-limit safety net, deferring a command by N minutes, and creating or removing the isolated git worktree a session runs in",
+      "version": "0.1.0",
+      "source": "./",
+      "author": {
+        "name": "dEitY719",
+        "url": "https://github.com/dEitY719"
+      }
+    }
+  ]
+}

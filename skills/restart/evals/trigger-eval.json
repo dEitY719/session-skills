@@ -1,0 +1,84 @@
+[
+  {
+    "query": "/session:restart 아까 하던 지점부터",
+    "should_trigger": true,
+    "note": "slash-literal: update if the skill is renamed (#1410)"
+  },
+  {
+    "query": "/session:restart - the api dropped mid-turn",
+    "should_trigger": true,
+    "note": "slash-literal: update if the skill is renamed (#1410)"
+  },
+  {
+    "query": "방금 응답이 중간에 툭 끊기면서 에러가 났어. 하던 파일 수정부터 다시 붙자.",
+    "should_trigger": true
+  },
+  {
+    "query": "Not logged in 이라고 떠서 재인증하고 왔어. 대화는 그대로니까 남은 단계 마저 진행해줘.",
+    "should_trigger": true
+  },
+  {
+    "query": "너무 오래 걸려서 esc 눌러버렸어. 이번엔 한 번에 몰아치지 말고 한 단계씩 잘게 쪼개서 가자.",
+    "should_trigger": true
+  },
+  {
+    "query": "아까 작업이 중간에 걸린 채로 남아 있어. 어디까지 됐는지 잡아서 그 지점부터 다시 진행하는 절차대로 해줘.",
+    "should_trigger": true
+  },
+  {
+    "query": "the stream died halfway through that edit. pick up from where it stopped instead of starting over.",
+    "should_trigger": true
+  },
+  {
+    "query": "the process got oom-killed mid-run but this session is still alive. carry on with the remaining steps.",
+    "should_trigger": true
+  },
+  {
+    "query": "컨텍스트는 아직 여유 있어. 인계 문서 쓸 게 아니라 그냥 멈춘 지점부터 계속하면 돼.",
+    "should_trigger": true
+  },
+  {
+    "query": "that turn blew up. resume in smaller pieces and push the heavy searching to a subagent so it does not die again.",
+    "should_trigger": true
+  },
+  {
+    "query": "토큰 리밋 걸렸어. 리셋되는 시각에 크론이 알아서 이어가게 해줘.",
+    "should_trigger": false
+  },
+  {
+    "query": "퇴근하면서 긴 작업 돌려놓을 건데 limit 걸리면 자동으로 재개되게 안전망 걸어줘.",
+    "should_trigger": false
+  },
+  {
+    "query": "컨텍스트 거의 다 찼어. 남은 작업 트래킹 이슈에 인계 코멘트로 남겨줘.",
+    "should_trigger": false
+  },
+  {
+    "query": "세션 닫아도 되는지 점검만 해줘.",
+    "should_trigger": false
+  },
+  {
+    "query": "schedule the pr creation step to run ten minutes from now",
+    "should_trigger": false
+  },
+  {
+    "query": "the pr's ci failed partway through. read the logs and fix the cause.",
+    "should_trigger": false
+  },
+  {
+    "query": "서버가 OOM 으로 죽었어. 로그 보고 원인 찾아줘.",
+    "should_trigger": false
+  },
+  {
+    "query": "git rebase 가 충돌로 멈춰 있어. 이어서 마무리해줘.",
+    "should_trigger": false
+  },
+  {
+    "query": "if i quit claude code and relaunch, does my conversation come back?",
+    "should_trigger": false
+  },
+  {
+    "query": "이 테스트가 자꾸 중간에 죽는데 원인 좀 찾아줘.",
+    "should_trigger": false
+  }
+]
