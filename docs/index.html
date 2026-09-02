@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko" class="theme-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>session skills</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { interpolate-size: allow-keywords; }
+
+    html.theme-dark {
+      --bg: #0A0A0A; --surface: #141414; --surface-hover: #1C1C1C;
+      --border: rgba(255,255,255,0.07);
+      --text: #EDEDED; --text-secondary: #8b8b8b;
+      --accent: #3b82f6; --accent-secondary: #8b5cf6;
+      --positive: #10b981; --negative: #f43f5e; --warning: #f59e0b;
+      --code-bg: #101010;
+    }
+    html.theme-light {
+      --bg: #FAFAF9; --surface: #FFFFFF; --surface-hover: #F5F5F4;
+      --border: rgba(0,0,0,0.08);
+      --text: #0f172a; --text-secondary: #64748b;
+      --accent: #2563eb; --accent-secondary: #7c3aed;
+      --positive: #059669; --negative: #e11d48; --warning: #d97706;
+      --code-bg: #f4f4f5;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.65; -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+      transition: background 0.3s, color 0.3s;
+      scrollbar-gutter: stable;
+    }
+    h1,h2,h3,h4 { color: var(--text); letter-spacing: -0.03em; line-height: 1.15; text-wrap: balance; }
+    h1 { font-weight: 700; }
+    code, pre { font-family: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace; }
+    code { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 0.86em; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+    pre code { background: none; border: none; padding: 0; }
+
+    .wrap { max-width: 900px; margin: 0 auto; padding: 64px 24px 96px; }
+    .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color: var(--text-secondary); border:1px solid var(--border); background:var(--surface); border-radius:999px; padding:6px 14px; }
+    header.page { border-bottom: 1px solid var(--border); padding-bottom: 36px; margin-bottom: 36px; }
+    header.page h1 { font-size: clamp(32px, 6vw, 48px); margin: 20px 0 12px; }
+    header.page .lede { font-size: 17px; color: var(--text-secondary); max-width: 64ch; }
+
+    .warn { display:flex; gap:14px; align-items:flex-start; border:1px solid var(--warning); border-left-width:3px; background:var(--surface); border-radius:0 10px 10px 0; padding:16px 20px; margin: 28px 0 8px; font-size:14.5px; color:var(--text-secondary); }
+    .warn strong { color: var(--text); }
+    .warn .ic { flex:none; width:20px; height:20px; color: var(--warning); margin-top:2px; }
+
+    .flow { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin: 28px 0 8px; font-size:14.5px; }
+    .flow .node { background: var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 18px; font-weight:600; }
+    .flow .node.out { border-color: var(--accent); color: var(--accent); }
+    .flow .node.mid { border-color: var(--accent-secondary); color: var(--accent-secondary); }
+    .flow .arrow { color: var(--text-secondary); font-weight:600; }
+
+    section { margin-top: 48px; }
+    section > h2 { font-size: 22px; display:flex; align-items:center; gap:12px; margin-bottom: 16px; }
+    section > h2 .num { flex:none; width:28px; height:28px; border-radius:7px; background:var(--accent); color:#fff; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; letter-spacing:0; }
+    section p { color: var(--text-secondary); font-size:15px; margin-bottom: 14px; max-width: 74ch; }
+    .label { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-secondary); font-weight:600; margin: 18px 0 8px; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; transition: box-shadow .2s ease; }
+    .card:hover { box-shadow: 0 0 0 1px var(--border), 0 8px 18px rgba(0,0,0,0.10); }
+    .card h3 { font-size: 15px; margin-bottom: 7px; display:flex; align-items:center; gap:9px; }
+    .card p { font-size: 14.5px; margin: 0; }
+    .ic { flex:none; width:18px; height:18px; }
+    .stack { display:grid; gap:12px; }
+    .out-card { border-left: 3px solid var(--accent); }
+    .out-card.neg { border-left-color: var(--negative); }
+    .out-card.neg h3 { color: var(--negative); }
+
+    ul.gates { list-style:none; display:grid; gap:9px; margin-top:6px; }
+    ul.gates li { display:flex; gap:11px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:12px 15px; font-size:14.5px; color:var(--text-secondary); }
+    ul.gates .ic { color: var(--positive); margin-top:3px; }
+
+    footer.page { border-top:1px solid var(--border); margin-top:56px; padding-top:20px; font-size:13px; color:var(--text-secondary); }
+
+    @keyframes fadeInUp { from { opacity:0; transform: translateY(24px);} to { opacity:1; transform:none;} }
+    .animate { animation: fadeInUp 0.6s ease-out both; }
+    .reveal { opacity:0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation:none !important; transition:none !important; } .reveal { opacity:1; transform:none; } }
+
+    @media print {
+      body { background:white !important; color:black !important; }
+      .viz-menu { display:none; }
+      .reveal { opacity:1 !important; transform:none !important; }
+      .card { break-inside: avoid; border:1px solid #ddd; box-shadow:none; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    @page { margin: 1in; }
+
+    .viz-menu { position: fixed; top: 16px; right: 16px; z-index: 9999; }
+    .viz-menu-toggle { width:44px; height:44px; border-radius:12px; background:var(--surface); border:1px solid var(--border); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(12px); transition: all .2s; }
+    .viz-menu-toggle:hover { background: var(--surface-hover); }
+    .viz-menu-dropdown { position:absolute; top:52px; right:0; min-width:200px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:8px; opacity:0; visibility:hidden; transform:translateY(-8px); transition:all .2s; backdrop-filter: blur(16px); }
+    .viz-menu-dropdown.open { opacity:1; visibility:visible; transform:none; }
+    .viz-menu-dropdown button { width:100%; padding:10px 14px; border:none; border-radius:8px; background:transparent; color:var(--text); font-size:14px; font-family:inherit; cursor:pointer; text-align:left; display:flex; align-items:center; gap:10px; transition: background .15s; }
+    .viz-menu-dropdown button:hover { background: var(--surface-hover); }
+
+    .skill-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+    .card code.inv { font-size: 12.5px; color: var(--text-secondary); display:block; margin: 2px 0 9px; }
+    .card .links { display:flex; flex-wrap:wrap; gap:14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .card .links a { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; color: var(--accent); text-decoration:none; }
+    .card .links a:hover { text-decoration: underline; }
+    .card .links a .ic { width:15px; height:15px; }
+    .card .links a.usage { color: var(--accent-secondary); }
+    .pair { display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:14px; }
+    footer.site { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--border); font-size: 13.5px; color: var(--text-secondary); }
+    footer.site a { color: var(--accent); text-decoration: none; }
+    footer.site a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="viz-menu">
+    <button class="viz-menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <div class="viz-menu-dropdown" id="vizMenuDropdown">
+      <button onclick="cycleTheme()">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <span id="themeLabel">Dark</span>
+      </button>
+      <button onclick="window.print()">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>
+        <span>Print / PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <main id="main-content" class="wrap">
+    <header class="page animate">
+      <span class="eyebrow">session plugin &middot; skill docs</span>
+      <h1>session skills</h1>
+      <p class="lede">코딩 세션의 <strong>경계</strong>를 담당하는 스킬 8개 &mdash; 죽은 턴을 되살리고, 끝나는 세션을 감사하거나 넘기고, 토큰 리밋 리셋 너머로 무인 작업을 잇고, 작업이 벌어질 격리 워크트리를 만들고 지웁니다. 무엇을 건드리는가가 아니라 <strong>언제 손이 가는가</strong>로 묶여 있습니다.</p>
+
+      <div class="flow"><span class="node">worktree-spawn</span><span class="arrow">&#9472;&#9654;</span> <span class="node mid">restart</span><span class="arrow">&#9472;&#9654;</span> <span class="node mid">rate-limit-guard</span><span class="arrow">&#9472;&#9654;</span> <span class="node">close / handoff</span><span class="arrow">&#9472;&#9654;</span> <span class="node out">worktree-teardown</span></div>
+
+      <div class="warn">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        <span><strong>셋은 Claude Code 에서만 동작합니다</strong> &mdash; <code>rate-limit-guard</code> &middot; <code>resume-after-limit</code> &middot; <code>schedule</code> 은 벽시계 시각에 새 에이전트 턴을 여는 <code>CronCreate</code> 를 씁니다. 다른 하네스에는 대응물이 없고 우회로도 없습니다 &mdash; <code>sleep</code> 도, 백그라운드 셸도, <code>at</code> 잡도 에이전트를 깨우지 못합니다. 그래서 그 하네스에서는 <strong>못 한다고 말하고 멈추는 것이 정상 동작</strong>입니다.</span>
+      </div>
+    </header>
+
+    <section data-reveal>
+      <h2><span class="num">1</span>스킬 8개</h2>
+      <p>같은 순간에 손이 가는 것끼리 세 갈래로 묶었습니다. 기술적으로는 공통점이 없어도 &mdash; 세션이 곤란해졌을 때, 세션을 끝낼 때, 작업 공간을 여닫을 때.</p>
+
+      <div class="label">세션 중단 &middot; 재개</div>
+      <div class="skill-grid">
+      <article class="card" data-reveal>
+        <h3>restart</h3>
+        <code class="inv">/session:restart</code>
+        <p>API 에러 &middot; OOM &middot; 인증 만료 &middot; ESC 로 죽은 턴을 <strong>같은 세션에서</strong> 이어간다. TodoList 의 <code>in_progress</code> 를 재개 지점으로 잡고 <code>git status</code> 로 대조한 뒤, 다음 실패가 덜 비싸도록 도구 호출 1회 단위로 쪼개 진행한다.</p>
+        <div class="links">
+          <a href="skill-guides/restart.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>설명서</span></a>
+          <a class="usage" href="skill-output/restart-usage.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M2 20h20M10 9l4 2-4 2z"/></svg><span>사용 예시</span></a>
+        </div>
+      </article>
+      <article class="card" data-reveal>
+        <h3>rate-limit-guard</h3>
+        <code class="inv">/session:rate-limit-guard --reset HH:MM &lt;command&gt;</code>
+        <p>리셋 시각 <strong>+5분</strong>에 durable 크론 하나를 걸고 <code>.claude/.rate-limit-guard.json</code> 을 남긴 뒤 감싼 명령을 실행한다. 성공하면 안전망을 스스로 걷지만, 리밋 &middot; 네트워크 &middot; 타임아웃 같은 일시적 실패에서는 <strong>크론을 그대로 둔다</strong> &mdash; 그러라고 건 것이다.</p>
+        <div class="links">
+          <a href="skill-guides/rate-limit-guard.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>설명서</span></a>
+          <a class="usage" href="skill-output/rate-limit-guard-usage.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M2 20h20M10 9l4 2-4 2z"/></svg><span>사용 예시</span></a>
+        </div>
+      </article>
+      <article class="card" data-reveal>
+        <h3>resume-after-limit</h3>
+        <code class="inv">/session:resume-after-limit [&lt;command&gt;]</code>
+        <p>그 크론이 실제로 호출하는 쪽. state 파일을 읽어 명령을 복원하고, <strong>워크트리가 다르면 즉시 멈춘다</strong>. 다음 사이클이 남아 있으면 명령을 돌리기 <strong>전에</strong> 미리 크론을 재무장하고, 성공 시 정리한다.</p>
+        <div class="links">
+          <a href="skill-guides/resume-after-limit.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>설명서</span></a>
+          <a class="usage" href="skill-output/resume-after-limit-usage.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M2 20h20M10 9l4 2-4 2z"/></svg><span>사용 예시</span></a>
+        </div>
+      </article>
+      <article class="card" data-reveal>
+        <h3>schedule</h3>
+        <code class="inv">/session:schedule [--time M] "&lt;command&gt;"</code>
+        <p>슬래시 명령이든 자연어 작업이든 <strong>M분 뒤에 한 번</strong> 실행되게 미룬다(기본 5분). 세션 로컬 일회성 지연 전용이며, 반복되는 클라우드 루틴은 내장 <code>/schedule</code> 의 몫이다.</p>
+        <div class="links">
+          <a href="skill-guides/schedule.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>설명서</span></a>
+          <a class="usage" href="skill-output/schedule-usage.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M2 20h20M10 9l4 2-4 2z"/></svg><span>사용 예시</span></a>
+        </div>
+      </article>
+      </div>
+
+      <div class="label">세션 마무리</div>
+      <div class="skill-grid">
+      <article class="card" data-reveal>
+        <h3>close</h3>
+        <code class="inv">/session:close [--repos &lt;path,...&gt;]</code>
+        <p>이번 세션이 건드린 모든 저장소를 4개 항목(git 상태 &middot; TodoList &middot; 임시 산출물 &middot; 이슈/PR 후속)으로 훑어 <code>[OK]</code> 또는 <code>[BLOCKED]</code> 와 <code>Next:</code> 한 줄만 낸다. <strong>완전한 read-only</strong> &mdash; 파일도 git 상태도 원격도 건드리지 않고, <code>/exit</code> 를 대신 실행하지도 않는다.</p>
+        <div class="links">
+          <a href="skill-guides/close.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>설명서</span></a>
+          <a class="usage" href="skill-output/close-usage.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M2 20h20M10 9l4 2-4 2z"/></svg><span>사용 예시</span></a>
+        </div>
+      </article>
+      <article class="card" data-reveal>
+        <h3>handoff</h3>
+        <code class="inv">/session:handoff [issue] [remote] [--memory-only]</code>
+        <p>컨텍스트가 차오를 때 <strong>미완</strong> 작업을 트래킹 이슈 코멘트와 에이전트 메모리 파일에 적고, 복사해 쓸 재개 문장 한 줄을 낸다. 쓰기는 정확히 그 둘뿐 &mdash; 커밋도 push 도 하지 않는다. 실제로 머지된 PR 과 이번 세션에서 초록으로 돈 테스트만 "완료" 로 적는다.</p>
+        <div class="links">
+          <a href="skill-guides/handoff.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>설명서</span></a>
+          <a class="usage" href="skill-output/handoff-usage.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M2 20h20M10 9l4 2-4 2z"/></svg><span>사용 예시</span></a>
+        </div>
+      </article>
+      </div>
+
+      <div class="label">격리 작업공간</div>
+      <div class="skill-grid">
+      <article class="card" data-reveal>
+        <h3>worktree-spawn</h3>
+        <code class="inv">/session:worktree-spawn [--task &lt;slug&gt;] [&lt;branch&gt;]</code>
+        <p><code>../&lt;project&gt;-&lt;agent&gt;-&lt;N&gt;</code> 워크트리를 <code>wt/&lt;agent&gt;/&lt;N&gt;</code> 브랜치로 만들어 병렬 에이전트끼리 충돌하지 않게 한다. 에이전트 이름 감지 &middot; 빈 인덱스 선택 &middot; base ref 해석 &middot; <code>git-crypt</code> 자동 해제까지 처리하되, 이미 워크트리 안이면 실행을 막는다.</p>
+        <div class="links">
+          <a href="skill-guides/worktree-spawn.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>설명서</span></a>
+          <a class="usage" href="skill-output/worktree-spawn-usage.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M2 20h20M10 9l4 2-4 2z"/></svg><span>사용 예시</span></a>
+        </div>
+      </article>
+      <article class="card" data-reveal>
+        <h3>worktree-teardown</h3>
+        <code class="inv">/session:worktree-teardown &lt;worktree-path&gt; [--force]</code>
+        <p>워크트리를 지우고 main 을 동기화한 뒤 브랜치를 <code>-d</code> 로 안전 삭제한다. <strong>여덟 중 유일하게 파괴적</strong>이라 미커밋 &middot; 미푸시 작업이 남아 있으면 멈추고, <code>--force</code> 는 사람이 주는 것이지 에이전트가 질러도 되는 지름길이 아니다.</p>
+        <div class="links">
+          <a href="skill-guides/worktree-teardown.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>설명서</span></a>
+          <a class="usage" href="skill-output/worktree-teardown-usage.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16v12H4z"/><path d="M2 20h20M10 9l4 2-4 2z"/></svg><span>사용 예시</span></a>
+        </div>
+      </article>
+      </div>
+    </section>
+
+    <section data-reveal>
+      <h2><span class="num">2</span>짝과 갈림길</h2>
+      <p>여덟 중 여섯은 짝으로 움직이고, 나머지 갈림길은 "지금 무엇이 끊겼는가" 로 갈립니다.</p>
+      <div class="pair">
+        <article class="card">
+          <h3>한 장치의 양 끝 &mdash; rate-limit-guard / resume-after-limit</h3>
+          <p>하나의 메커니즘을 두 번의 발화로 쪼갠 것이다. 가드는 <code>reset + 5분</code> 을 계산해 크론을 걸고 state 파일을 쓰고, 리주머는 그 크론이 부르는 쪽이라 자기가 <strong>맞는 워크트리에서 깨어났는지</strong> 부터 확인한다. 어느 쪽도 혼자서는 쓸모가 없어 함께 배포된다.</p>
+        </article>
+        <article class="card">
+          <h3>같은 순간, 다른 질문 &mdash; close / handoff</h3>
+          <p><code>close</code> 는 "깨끗하게 끝났나" 를 묻고 감사만 한다. <code>handoff</code> 는 컨텍스트가 먼저 바닥났을 때 남은 일을 이슈에 적어 다음 세션이 고고학 대신 문장 하나로 시작하게 한다. <code>close</code> 가 미완 작업에 <code>[BLOCKED]</code> 를 내면 그 <code>Next:</code> 줄이 가리키는 곳이 <code>handoff</code> 다.</p>
+        </article>
+        <article class="card">
+          <h3>재개의 갈림길 &mdash; restart / resume-after-limit</h3>
+          <p>턴이 에러나 ESC 로 끊긴 것이면 <code>restart</code> &mdash; 세션은 살아 있으니 크론이 필요 없다. 토큰 한계에 막힌 것이면 리셋을 기다려야 하므로 <code>rate-limit-guard</code> 가 걸어둔 크론과 <code>resume-after-limit</code> 의 몫이다.</p>
+        </article>
+        <article class="card">
+          <h3>여닫는 한 쌍 &mdash; worktree-spawn / teardown</h3>
+          <p>둘 다 <strong>메인 저장소에서</strong> 실행하고, 워크트리 안이면 서로 같은 검사로 막는다. 순수 <code>git</code> 이라 여섯 하네스 전부에서 동일하게 동작하는 유일한 둘이기도 하다.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="site">
+      소스: <a href="https://github.com/dEitY719/session-skills">dEitY719/session-skills</a> &middot;
+      각 페이지는 <code>docs/skill-guides/</code> 와 <code>docs/skill-output/</code> 의 Markdown 원본에서 생성됩니다.
+    </footer>
+  </main>
+
+  <script>
+    function toggleMenu() { var d = document.getElementById('vizMenuDropdown'); if (d) d.classList.toggle('open'); }
+    document.addEventListener('click', function(e) { if (!e.target.closest('.viz-menu')) { var d = document.getElementById('vizMenuDropdown'); if (d) d.classList.remove('open'); } });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { var d = document.getElementById('vizMenuDropdown'); if (d) d.classList.remove('open'); } });
+
+    var savedTheme = localStorage.getItem('viz-theme');
+    var currentTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    function applyTheme(t) {
+      document.documentElement.className = 'theme-' + t;
+      var lbl = document.getElementById('themeLabel');
+      if (lbl) lbl.textContent = (t === 'dark' ? 'Dark' : 'Light');
+      localStorage.setItem('viz-theme', t);
+      currentTheme = t;
+    }
+    function cycleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+    applyTheme(currentTheme);
+
+    document.querySelectorAll('[data-reveal]').forEach(function(el) { el.classList.add('reveal'); });
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+    </script>
+</body>
+</html>
