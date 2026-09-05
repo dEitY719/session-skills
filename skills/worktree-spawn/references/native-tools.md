@@ -29,13 +29,15 @@ task rather than this session's own workspace.
 
 ## Sequence
 
-1. **Index and name (still this skill's).** Compute the agent name and the next
-   free index exactly as `lib/spawn.sh` does -- `basename "$(git rev-parse
-   --show-toplevel)"` for the project, `references/agent-detection.md` for the
-   agent, then scan the parent directory for `{project}-{agent}-N` directories
-   and take `max(N)+1`. Translate a Korean `--task` to an English slug first.
-   The dry-run shortcut is `bash "${SKILL_DIR}/lib/spawn.sh" --dry-run`, which
-   prints the agent, index, branch and base without creating anything.
+1. **Index and name (still this skill's).** Translate a Korean `--task` to an
+   English slug, then let the script compute the rest:
+   `bash "${SKILL_DIR}/lib/spawn.sh" [--task <slug>] --dry-run` prints the
+   agent, path, branch and base without creating anything. Take `Agent:` and
+   `Branch:` from that output -- it normalizes the slug too. Only if the script
+   cannot be run, derive them by hand the way it does: `basename "$(git
+   rev-parse --show-toplevel)"` for the project, `references/agent-detection.md`
+   for the agent, then scan the parent for `{project}-{agent}-N` and take
+   `max(N)+1`.
 2. **Create.** `EnterWorktree` with `name` set to the branch name from Step 1 --
    `wt/<agent>/<N>` or `wt/<agent>/<N>-<slug>`, both valid under the name rules.
    Pass an explicit `<branch>` argument through unchanged.

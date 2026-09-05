@@ -19,9 +19,8 @@
 # NF-4 사내PC 오탐 방지 — `~/.dotfiles-setup-mode` 가 internal 이고
 # origin 호스트가 github.com(GHES 가 아닌 common github)이면 미반영 커밋을
 # BLOCKED 가 아니라 NOTE 로 강등한다. 그 조합에서 common github 은
-# `dEitY719/dotfiles` 의 `docs/.ssot/pc-environment.md` §3 기준 pull only
-# 이므로, 로컬에만 있는
-# 커밋은 비상 상황이 아니라 정상 상태다.
+# `dEitY719/dotfiles` 의 `docs/.ssot/pc-environment.md` §3 기준 pull only 이므로,
+# 로컬에만 있는 커밋은 비상 상황이 아니라 정상 상태다.
 #
 # Usage:
 #   check-repos.sh <repo-path> [repo-path...]
@@ -77,9 +76,8 @@ pass() {
 # read_setup_mode — `~/.dotfiles-setup-mode` 의 정규화된 값을 찍는다.
 #
 # `dEitY719/dotfiles` 의 shell-common/functions/gh_host.sh `_gh_resolve_host`
-# 와 같은 규칙
-# (레거시 숫자값 1/2/3 → public/internal/external)을 쓰되, 파일을 직접
-# 읽는다 — 감사 도중 부수효과가 있는 파일을 source 하지 않기 위해서다.
+# 와 같은 규칙(레거시 숫자값 1/2/3 → public/internal/external)을 쓰되, 파일을
+# 직접 읽는다 — 감사 도중 부수효과가 있는 파일을 source 하지 않기 위해서다.
 read_setup_mode() {
     _rsm_file="$HOME/.dotfiles-setup-mode"
     _rsm_mode=""

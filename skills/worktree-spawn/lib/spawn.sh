@@ -66,7 +66,7 @@ done
 
 # ---- Step 1: Validate preconditions -----------------------------------------
 
-if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
+if ! TOPLEVEL="$(git rev-parse --show-toplevel 2>/dev/null)"; then
     echo "Error: Not a git repository."
     exit 1
 fi
@@ -83,7 +83,6 @@ fi
 git diff --quiet || echo "Warning: uncommitted changes in working directory"
 
 # Check parent directory is writable
-TOPLEVEL="$(git rev-parse --show-toplevel)"
 PARENT="$(dirname "$TOPLEVEL")"
 test -w "$PARENT" || { echo "Error: Permission denied: $PARENT"; exit 1; }
 
@@ -139,11 +138,14 @@ if [[ "$GIT_CRYPT_ACTIVE" == true ]]; then
     done
 fi
 
-# Bypass flags ONLY when git-crypt is active AND no key file resolved.
-# When a key is found, the auto-unlock path runs in Step 6 instead.
-GIT_CRYPT_FLAGS=()
-if [[ "$GIT_CRYPT_ACTIVE" == true && -z "$GIT_CRYPT_KEY" ]]; then
-    GIT_CRYPT_FLAGS=(-c filter.git-crypt.smudge=cat -c filter.git-crypt.clean=cat)
+# The `worktree add` itself always bypasses the smudge filter when git-crypt is
+# active -- with a key so the ciphertext checks out cleanly for `git-crypt
+# unlock` to decrypt in place (an empty --no-checkout tree reads as "all tracked
+# files deleted" and unlock aborts), without one because the bypass is the whole
+# fallback. What differs is only what Step 6 does afterwards.
+GIT=(git)
+if [[ "$GIT_CRYPT_ACTIVE" == true ]]; then
+    GIT+=(-c filter.git-crypt.smudge=cat -c filter.git-crypt.clean=cat)
 fi
 
 # ---- Step 3.5: Lock acquisition ---------------------------------------------
@@ -220,6 +222,7 @@ fi
 
 resolve_base_ref() {
     local explicit_base="${1:-}"
+    local ref
 
     # Priority 1: explicit --base argument
     if [[ -n "$explicit_base" ]]; then
@@ -231,18 +234,12 @@ resolve_base_ref() {
         exit 1
     fi
 
-    # Priority 2: origin/main
-    if git rev-parse --verify --quiet "origin/main" >/dev/null 2>&1; then
-        echo "origin/main"; return
-    fi
-
-    # Priority 3: main or master
-    if git rev-parse --verify --quiet "main" >/dev/null 2>&1; then
-        echo "main"; return
-    fi
-    if git rev-parse --verify --quiet "master" >/dev/null 2>&1; then
-        echo "master"; return
-    fi
+    # Priority 2-3: origin/main, then main or master
+    for ref in origin/main main master; do
+        if git rev-parse --verify --quiet "$ref" >/dev/null 2>&1; then
+            echo "$ref"; return
+        fi
+    done
 
     # Priority 4: current HEAD
     echo "HEAD"
@@ -252,6 +249,14 @@ resolve_base_ref() {
 # that non-zero status into a stop here, which is the intended behaviour.
 BASE_REF="$(resolve_base_ref "$BASE_OVERRIDE")"
 
+# The one `git worktree add` shape, built before the gate so --dry-run prints
+# the exact command Step 6 runs rather than a hand-kept copy of it.
+if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+    ADD_ARGS=(worktree add "${WORKTREE_PATH}" "${BRANCH}")
+else
+    ADD_ARGS=(worktree add -b "${BRANCH}" "${WORKTREE_PATH}" "${BASE_REF}")
+fi
+
 # ---- --dry-run gate ---------------------------------------------------------
 
 if [[ "$DRY_RUN" == true ]]; then
@@ -260,11 +265,7 @@ if [[ "$DRY_RUN" == true ]]; then
     echo "  Path:    ${WORKTREE_PATH}"
     echo "  Branch:  ${BRANCH}"
     echo "  Base:    ${BASE_REF}"
-    if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
-        echo "  Command: git worktree add ${WORKTREE_PATH} ${BRANCH}"
-    else
-        echo "  Command: git worktree add -b ${BRANCH} ${WORKTREE_PATH} ${BASE_REF}"
-    fi
+    echo "  Command: ${GIT[*]} ${ADD_ARGS[*]}"
     echo "No changes made."
     exit 0
 fi
@@ -274,52 +275,30 @@ fi
 
 GIT_CRYPT_REPORT=""
 
-if [[ "$GIT_CRYPT_ACTIVE" == true && -n "$GIT_CRYPT_KEY" ]]; then
-    # ---- Auto-unlock path: 4-step sequence ----
-    # Step 1: worktree add WITH command-level smudge bypass.
-    # Why not --no-checkout: git-crypt unlock runs `git status` and rejects if
-    # the working tree is "not clean"; an empty (--no-checkout) worktree counts
-    # as "all tracked files deleted" and unlock aborts. So we check out
-    # ciphertext cleanly first, then have unlock decrypt in place.
-    if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
-        git -c filter.git-crypt.smudge=cat -c filter.git-crypt.clean=cat \
-            worktree add "${WORKTREE_PATH}" "${BRANCH}"
-    else
-        git -c filter.git-crypt.smudge=cat -c filter.git-crypt.clean=cat \
-            worktree add -b "${BRANCH}" "${WORKTREE_PATH}" "${BASE_REF}"
-    fi
+"${GIT[@]}" "${ADD_ARGS[@]}"
 
-    # Step 2: worktree-local TEMPORARY bypass so unlock's git-status check passes.
+if [[ "$GIT_CRYPT_ACTIVE" == true ]]; then
+    # Worktree-local bypass. On the unlock path it is temporary, and only there
+    # so `git-crypt unlock`'s own `git status` check passes; with no key it is
+    # the permanent fallback.
     git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.smudge cat
     git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.clean cat
     git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.required false
 
-    # Step 3: git-crypt unlock -- decrypts working tree + stores key in worktree GIT_DIR.
-    if (cd "${WORKTREE_PATH}" && git-crypt unlock "${GIT_CRYPT_KEY}"); then
-        # Step 4: RESTORE filter to git-crypt so future commits encrypt properly.
+    if [[ -z "$GIT_CRYPT_KEY" ]]; then
+        git -C "${WORKTREE_PATH}" checkout -- . 2>/dev/null || true
+        GIT_CRYPT_REPORT="disabled (no key; run from main repo: gc-export-key)"
+    elif (cd "${WORKTREE_PATH}" && git-crypt unlock "${GIT_CRYPT_KEY}"); then
+        # unlock decrypted the tree and stored the key in the worktree GIT_DIR;
+        # RESTORE the filter to git-crypt so future commits encrypt properly.
         git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.smudge "git-crypt smudge"
         git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.clean "git-crypt clean"
         git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.required true
         GIT_CRYPT_REPORT="unlocked via ${GIT_CRYPT_KEY}"
     else
-        # Unlock failed -- temp bypass from step 2 stays; worktree usable as binary.
+        # Unlock failed -- the bypass above stays; worktree usable as binary.
         echo "Warning: git-crypt unlock failed with ${GIT_CRYPT_KEY}; staying on bypass"
         GIT_CRYPT_REPORT="disabled (unlock failed; encrypted files stay binary)"
-    fi
-else
-    # ---- Bypass path (no git-crypt, or git-crypt active but no key file) ----
-    if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
-        git ${GIT_CRYPT_FLAGS[@]+"${GIT_CRYPT_FLAGS[@]}"} worktree add "${WORKTREE_PATH}" "${BRANCH}"
-    else
-        git ${GIT_CRYPT_FLAGS[@]+"${GIT_CRYPT_FLAGS[@]}"} worktree add -b "${BRANCH}" "${WORKTREE_PATH}" "${BASE_REF}"
-    fi
-    if [[ "$GIT_CRYPT_ACTIVE" == true ]]; then
-        # Make the bypass permanent in the worktree.
-        git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.smudge cat
-        git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.clean cat
-        git -C "${WORKTREE_PATH}" config --worktree filter.git-crypt.required false
-        git -C "${WORKTREE_PATH}" checkout -- . 2>/dev/null || true
-        GIT_CRYPT_REPORT="disabled (no key; run from main repo: gc-export-key)"
     fi
 fi
 

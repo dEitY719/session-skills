@@ -74,9 +74,8 @@ The script prints:
   cd ../my-app-claude-1
 ```
 
-The `git-crypt` line only appears when the repo uses git-crypt — `unlocked via
-<key path>` (auto-unlock) or `disabled (no key file)` (bypass, which also
-prints the `git-crypt export-key` hint).
+The `git-crypt` line only appears when the repo uses git-crypt;
+`references/bash-commands.md` lists its three exact forms.
 
 In an auto-unlocked worktree use explicit `git add <path>`, never `-A` or `.`:
 git-crypt files can show as `M` from a raw-byte vs. textconv mismatch.

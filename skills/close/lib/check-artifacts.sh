@@ -25,11 +25,11 @@ set -uo pipefail
 _cra_lib_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 . "${_cra_lib_dir}/_repo_common.sh"
 
-# 편집/병합 부산물로 취급할 이름 글롭. `dEitY719/dotfiles` 의
-# shell-common/functions/file_cleanup.sh 의 CLEANUP_DEFAULT_PATTERNS 와는 목적이 다르다 — 그쪽은 사람이 opt-in 으로
-# 지우는 "백업/구버전 파일" 목록(del_file 용, bash 배열)이고, 여기는 세션이
-# 끊기며 남는 "편집기·병합 도구가 흘린 임시 산출물"만 read-only 로 잡는다.
-# 둘을 하나로 합치면 서로 다른 의도의 글롭이 뒤섞인다.
+# 편집/병합 부산물로 취급할 이름 글롭. `dEitY719/dotfiles` 의 shell-common/
+# functions/file_cleanup.sh 의 CLEANUP_DEFAULT_PATTERNS 와는 목적이 다르다 —
+# 그쪽은 사람이 opt-in 으로 지우는 "백업/구버전 파일" 목록(del_file 용, bash
+# 배열)이고, 여기는 세션이 끊기며 남는 "편집기·병합 도구가 흘린 임시 산출물"만
+# read-only 로 잡는다. 둘을 하나로 합치면 서로 다른 의도의 글롭이 뒤섞인다.
 RESERVED_GLOBS='*.tmp *.bak *.orig *.rej *.swp *~'
 NOTE_COUNT=0
 CHECKED_COUNT=0
