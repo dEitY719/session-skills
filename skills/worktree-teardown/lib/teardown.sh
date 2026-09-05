@@ -179,14 +179,21 @@ resolve_main_branch() {
 }
 
 MAIN_BRANCH="$(resolve_main_branch)"
-git checkout "$MAIN_BRANCH"
 
+NOW_ON="$MAIN_BRANCH"
 MAIN_STATUS="up to date with origin/${MAIN_BRANCH}"
-if ! git pull origin "$MAIN_BRANCH"; then
-    # Hand the conflict back to the AI agent: list the files and keep going.
+if ! git checkout "$MAIN_BRANCH"; then
+    # The worktree is already removed, so `set -e` must NOT abort here: that
+    # would skip the branch delete, the audit log and the report, leaving a
+    # half-done teardown with no record of it. A dirty primary working
+    # directory is the common cause. Skip the pull too -- we are still on some
+    # other branch and must not pull "$MAIN_BRANCH" into it.
+    NOW_ON="$(git rev-parse --abbrev-ref HEAD)"
+    MAIN_STATUS="checkout to ${MAIN_BRANCH} failed -- sync it manually"
+elif ! git pull origin "$MAIN_BRANCH"; then
+    # The conflict is handed back to the caller, not resolved here.
     # `git branch -d` below stays safe -- it refuses an unmerged branch.
-    echo "Conflict detected during pull."
-    echo "Attempting to resolve..."
+    echo "Conflict detected during pull. Conflicted files (resolve them yourself):"
     git diff --name-only --diff-filter=U
     MAIN_STATUS="pull failed -- resolve before continuing (see output above)"
 fi
@@ -235,7 +242,7 @@ MAIN_REPO="$(git rev-parse --show-toplevel)"
 echo "[OK] Teardown complete"
 echo "  Removed:  ${WORKTREE_PATH}"
 echo "  Branch:   ${BRANCH} (${BRANCH_STATUS})"
-echo "  Now on:   ${MAIN_BRANCH} (${MAIN_STATUS})"
+echo "  Now on:   ${NOW_ON} (${MAIN_STATUS})"
 echo ""
 echo "  Note: if your outer shell was cd'd inside the removed worktree, run"
 echo "  \`cd ${MAIN_REPO}\` there now to avoid \`getcwd: cannot access parent"

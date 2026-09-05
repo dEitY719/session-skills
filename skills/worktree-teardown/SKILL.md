@@ -26,6 +26,7 @@ Remove an AI worktree and sync main after work is complete — the reverse of
 The worktree path is an argument (e.g., `/session:worktree-teardown ~/dotfiles-claude-2`).
 
 Read `references/options-and-errors.md` for CLI options and error handling.
+`SKILL_DIR` = this file's directory.
 
 ## Step 1: Confirm the target (model judgment)
 
