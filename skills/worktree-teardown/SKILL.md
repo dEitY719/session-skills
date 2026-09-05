@@ -5,7 +5,8 @@ description: >-
   session:worktree-spawn. Run from the MAIN repo with the worktree path as
   an argument. Use for /session:worktree-teardown, "작업 끝", "워크트리 정리", "워크트리
   제거", "cleanup worktree".
-allowed-tools: Bash, Read, Grep, Glob
+license: MIT
+allowed-tools: Bash, Read, Grep, Glob, ExitWorktree
 metadata:
   model_recommendation:
     tier: haiku
@@ -26,54 +27,47 @@ The worktree path is an argument (e.g., `/session:worktree-teardown ~/dotfiles-c
 
 Read `references/options-and-errors.md` for CLI options and error handling.
 
-## Execution Steps
+## Step 1: Confirm the target (model judgment)
 
-Run these steps in order. Stop immediately on any error.
-Read `references/bash-commands.md` for exact bash implementations per step.
+This is the destructive skill in this plugin. Before running anything, confirm
+which worktree the user means — `git worktree list` in the main repo — and pass
+it as `<worktree-path>`. Prefer `--dry-run` first when the target came from
+inference rather than from the user naming a path.
 
-### Step 0: Dry-run Gate
+`--force` is the user's explicit override of the work-loss guard, never a
+shortcut past a block you hit. If the pre-flight refuses, report what would be
+lost and stop.
 
-If `--dry-run`, print the plan (resolved worktree path, branch, intended
-actions) and stop. No destructive action.
+## Step 2: Run the teardown
 
-### Step 1: Validate — Must Be in Main Repo, NOT a Worktree
+```
+bash "${SKILL_DIR}/lib/teardown.sh" <worktree-path> [--force] [--keep-branch] [--dry-run]
+```
 
-Check `git-dir == git-common-dir`. If INSIDE a worktree, print error and stop
-(same check as spawn — both run from the main repo).
+The script validates that you are in the main repo and not inside a worktree,
+resolves the path and branch, runs the pre-flight work-loss guard (uncommitted
+changes, unpushed commits), removes and prunes the worktree, syncs main
+**before** the branch delete so `git branch -d` can verify merge status, safe-
+deletes the branch, appends the audit log, and prints the report.
+`references/bash-commands.md` is its full contract: arguments, exit codes,
+guards, output lines, and what stays model judgment.
 
-Require a `<worktree-path>` argument. If missing, list existing worktrees and stop.
+**Claude Code only:** `ExitWorktree` enforces the same pre-flight in the
+harness — it refuses `action: "remove"` on a worktree with uncommitted files or
+unmerged commits unless `discard_changes` is true — but it runs from *inside*
+the worktree and does not sync main first. Read `references/native-tools.md`
+and follow it when the session is already in the worktree it is done with.
+Every other harness (Codex, Gemini, Kimi, opencode) uses the script above.
 
-### Step 2: Resolve Worktree Info
+## Step 3: Resolve a pull conflict, if any
 
-From `<worktree-path>`, resolve `WORKTREE_PATH` (absolute), `BRANCH` (checked
-out there, via `git worktree list`), and `WORKTREE_NAME` (basename). Verify it
-is a known worktree; if not, print error and stop.
+If the sync conflicts, the script prints `Conflict detected during pull.` and
+the conflicting file list, then continues to the safe branch delete. Resolve
+those files, commit, and say so in the report — do not leave main mid-conflict.
 
-### Step 3: Pre-flight Checks
+## Step 4: Report
 
-Use `git -C <worktree-path>` to check for uncommitted changes or unpushed
-commits. Block to prevent work loss. Skip these checks if `--force` is given.
-
-### Step 4: Remove Worktree
-
-`git worktree remove <path>`. On failure, try `--force` if user opted in.
-
-### Step 5: Sync Main
-
-`git checkout main && git pull origin main`.
-Must run BEFORE branch delete so `git branch -d` can verify merge status.
-If pull conflicts, the AI agent attempts to resolve them and reports.
-
-### Step 6: Delete Branch
-
-`git branch -d <branch>` (safe delete — verifies merge status).
-Skip if `--keep-branch` is given. Warn if branch is not fully merged.
-
-### Step 7: Log
-
-Append `TEARDOWN` entry to `ai-worktree-spawn.log` (same file as spawn).
-
-### Step 8: Report
+On success the script prints:
 
 ```
 [OK] Teardown complete
@@ -86,14 +80,13 @@ Append `TEARDOWN` entry to `ai-worktree-spawn.log` (same file as spawn).
   directories` errors from zsh/pyenv/p10k.
 ```
 
-On failure, emit a structured failure verdict instead:
+The `Note:` block is unconditional — the outer shell's cwd is undetectable.
+
+On a non-zero exit, emit a structured failure verdict instead, filled in from
+the script's `Error:` line and surrounding output:
 
 ```
 [FAIL] <reason>
   Step:    <step name where failure occurred>
   Detail:  <error message or exit code>
 ```
-
-Always include the `Note:` block on `[OK]` — the outer shell's cwd is
-undetectable, so the hint is unconditional. Substitute `<main-repo>` with
-`git rev-parse --show-toplevel`.

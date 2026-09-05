@@ -3,9 +3,9 @@ name: schedule
 description: >-
   [Claude Code Only] 슬래시 명령/작업을 N분 뒤 실행되도록 예약(기본 5분). `CronCreate` 도구 필요 —
   Codex / Gemini CLI 에서는 동작하지 않는다. Use for /session:schedule, "N분 후에 /skill
-  실행해", "schedule /skill in N minutes". 세션 로컬 지연 전용 — 클라우드 정기 스케줄은 내장
-  /schedule 스킬.
+  실행해", "schedule /skill in N minutes". 세션 로컬 지연 전용 — 반복 주기 실행은 내장 /loop 스킬.
 allowed-tools: [CronCreate]
+license: MIT
 metadata:
   model_recommendation:
     tier: haiku
@@ -38,8 +38,8 @@ If args is `-h`/`--help`/`help`, read `references/help.md` verbatim and stop.
 ## Examples
 
 ```
-/session:schedule --time 10 "/gh-pr-reply 350"      # /gh-pr-reply in 10 min
-/session:schedule /gh-pr-resolve-conflict 351        # run in 5 min (default)
+/session:schedule --time 10 "/gh-pr:reply 350"      # /gh-pr:reply in 10 min
+/session:schedule /gh-resolve:conflict 351          # run in 5 min (default)
 /session:schedule --time 3 "PR #200 리뷰 코멘트 처리해"
 ```
 
@@ -52,8 +52,8 @@ If M is not a positive integer, default to 5 and warn the user.
 
 | Input | M | command |
 |-------|---|---------|
-| `--time 10 "/gh-pr-reply 350"` | 10 | `/gh-pr-reply 350` |
-| `/gh-pr-resolve-conflict 351` | 5 | `/gh-pr-resolve-conflict 351` |
+| `--time 10 "/gh-pr:reply 350"` | 10 | `/gh-pr:reply 350` |
+| `/gh-resolve:conflict 351` | 5 | `/gh-resolve:conflict 351` |
 | `--time 3 "PR 리뷰해"` | 3 | `PR 리뷰해` |
 
 ### 2. Calculate Fire Time
@@ -84,6 +84,7 @@ Print one line after scheduling:
 ## Related Skills
 
 `session:rate-limit-guard` — the rate-limit specialization of this skill (reset-time
-cron + state file + cleanup) · built-in `/schedule` — recurring cloud-agent
-routines; this skill is session-local one-shot deferral, used by `gh:issue-flow`
-for its in-flow delay steps.
+cron + state file + cleanup) · built-in `/loop` — recurring interval runs, and
+its own description says "Do NOT invoke for one-off tasks"; this skill is the
+session-local one-shot deferral, used by `gh-flow:issue` for its in-flow delay
+steps.

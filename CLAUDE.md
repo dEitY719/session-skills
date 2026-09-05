@@ -96,30 +96,34 @@ should apply here on the next run, which is the whole point.
 - **Prefixes were dropped here.** Unlike `pkm-skills`, which keeps `obsidian-`
   and `karakeep-` because they name two different external services, the old
   `devx-` and `ai-worktree-` prefixes were redundant with the plugin name
-  (#1410 F-4 / §4). `/session:devx-restart` stutters; `/session:restart` does
-  not. The forms are `/session:close`, `/session:handoff`,
-  `/session:worktree-spawn`, and so on. Do not reintroduce a prefix.
+  (dEitY719/dotfiles#1410 F-4 / §4). `/session:devx-restart` stutters;
+  `/session:restart` does not. The forms are `/session:close`,
+  `/session:handoff`, `/session:worktree-spawn`, and so on. Do not reintroduce
+  a prefix.
 - **Invocation form in prose is namespaced.** Body text referring to a skill as
   a command writes `/session:restart`. The old dash-form aliases
   (`/devx-restart`, `/ai-worktree-spawn`) were dropped in the migration — do not
   reintroduce them, in descriptions or anywhere else.
-- **Cross-repo references keep their own namespace.** `gh:issue-create`,
-  `gh:issue-read`, `gh:issue-flow`, `gh:pr-reply`, `write:task-history`,
-  `obsidian:session-clip`, and the `superpowers:*` process skills live in other
-  repos of this family. Leave them exactly as written; only siblings inside
-  `skills/` take the `session:` prefix.
+- **Cross-repo references use the owning repo's current namespace.**
+  `gh-issue:create`, `gh-issue:read`, `gh-flow:issue`, `gh-pr:reply`,
+  `notes:task-history`, `pkm:obsidian-session-clip` and the `superpowers:*`
+  process skills live in other repos of this family. Never rewrite them to
+  `session:` — only siblings inside `skills/` take that prefix — and never
+  freeze them either: when a sibling repo renames a skill, sweep every hit here
+  in the same commit, checking the new name against that repo's
+  `.claude-plugin/plugin.json` `name` and its `skills/<dir>/`.
 - **The on-disk worktree log keeps its old filename.** `worktree-spawn` and
   `worktree-teardown` append to `$(git rev-parse --git-common-dir)/ai-worktree-spawn.log`
   and `worktree-spawn` locks on `ai-worktree-spawn.lock`. Those are runtime data
   paths, not command names: renaming them would orphan every existing log and
   split the lock during the Phase 2-to-4 window when a repo may still have the
   dotfiles copy installed alongside this one. Leave them.
-- **Progressive disclosure.** `SKILL.md` stays under 100 lines (CI enforces it)
-  and names which `references/` file to read and when. Detail lives in
-  `references/`; executable steps live in `lib/`. Do not inline either back into
-  `SKILL.md` — most of these are within a dozen lines of the limit, and
-  `restart` was over it before the migration split Step 1 out into
-  `references/resume-target.md`.
+- **Progressive disclosure.** `SKILL.md` stays at 100 lines or fewer (CI fails
+  above 100, so exactly 100 passes) and names which `references/` file to read
+  and when. Detail lives in `references/`; executable steps live in `lib/`. Do
+  not inline either back into `SKILL.md` — most of these are within a dozen
+  lines of the limit, and `restart` was over it before the migration split
+  Step 1 out into `references/resume-target.md`.
 - **Description budget.** CI sums every skill description and fails past 5,440
   characters — Codex's context budget — and rejects any single description over
   1,024. The eight here total roughly 1,850, so there is room; spend it on
@@ -205,8 +209,9 @@ The version appears in seven manifests: `.claude-plugin/marketplace.json`,
 `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`,
 `.kimi-plugin/plugin.json`, `.hermes-plugin/plugin.yaml`,
 `gemini-extension.json`, and `package.json`. CI checks that they agree — bump
-all of them together. Versioning is independent per repo (#1410 D-9); this repo
-does not move in lockstep with its siblings.
+all of them together. Versioning is independent per repo
+(dEitY719/dotfiles#1410 D-9); this repo does not move in lockstep with its
+siblings.
 
 ## No emojis
 

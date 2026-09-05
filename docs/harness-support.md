@@ -47,7 +47,7 @@ conversation and wait for a real reply. An auto-approve session setting is not
 the user's answer, and `--force` is never the agent's shortcut past a block.
 
 Two smaller gaps apply everywhere outside Claude Code. `handoff` may call
-`Skill(gh:issue-create)` to open a tracking issue — read that skill's `SKILL.md`
+`Skill(gh-issue:create)` to open a tracking issue — read that skill's `SKILL.md`
 inline, or just run `gh issue create`; the contract is an issue number. And
 `handoff` Step 5 writes a Claude Code auto-memory file — write the equivalent
 wherever the harness keeps agent memory, and if there is nowhere, emit one

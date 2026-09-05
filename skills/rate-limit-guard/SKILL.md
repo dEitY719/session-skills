@@ -6,6 +6,7 @@ description: >-
   이어가게", "auto-resume after my token limit resets". 재개 실행은
   session:resume-after-limit 몫.
 allowed-tools: Bash, Read, Write, CronCreate, CronDelete
+license: MIT
 metadata:
   model_recommendation:
     tier: haiku
@@ -73,7 +74,7 @@ place** — that is exactly when the safety net should fire.
 - Never use `recurring: true` or `durable: false`.
 - Never auto-cleanup on transient errors.
 - Never invoke from inside another skill — user-triggered only.
-- `--max-cycles 1` (default) preserves PR #369 behavior.
+- `--max-cycles 1` (default) preserves PR dEitY719/dotfiles#369 behavior.
 
 ## Related Skills
 

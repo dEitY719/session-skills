@@ -6,6 +6,7 @@ description: >-
   이어서", "resume after my token limit resets". API 에러·ESC 재개는
   session:restart.
 allowed-tools: Bash, Read, Write, CronCreate, CronDelete
+license: MIT
 metadata:
   model_recommendation:
     tier: haiku
@@ -36,7 +37,7 @@ If arg #1 is `-h`/`--help`/`help`, print `references/help.md` verbatim and stop.
 test -f .claude/.rate-limit-guard.json && cat .claude/.rate-limit-guard.json
 ```
 
-Parse `command`, `worktree`, `branch`, `max_cycles`, `cycles_remaining`, `cycle_window_min` (jq/Python). Missing multi-cycle fields default to `max_cycles=1`, `cycles_remaining=1`, `cycle_window_min=305` (PR #369 compat).
+Parse `command`, `worktree`, `branch`, `max_cycles`, `cycles_remaining`, `cycle_window_min` (jq/Python). Missing multi-cycle fields default to `max_cycles=1`, `cycles_remaining=1`, `cycle_window_min=305` (PR dEitY719/dotfiles#369 compat).
 
 ### 2. Resolve the Command
 

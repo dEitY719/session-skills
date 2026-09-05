@@ -15,12 +15,12 @@
 
 ## What it does
 
-When a long task is about to outlive the current session (context window
-near its limit, end of day, planned interruption), this skill writes the
+When a long task is about to outlive the current session (end of day, a
+planned interruption, or a context window near its limit), this skill writes the
 handoff so the next session can resume without re-explaining:
 
 1. Resolves the tracking issue (arg → conversation → branch → gh activity;
-   creates one via gh:issue-create when the work deserves it, or falls back
+   creates one via gh-issue:create when the work deserves it, or falls back
    to memory-only when it doesn't).
 2. Composes a structured handoff comment — verified done / remaining work /
    resume environment / open decisions — and posts it on the issue.
@@ -30,15 +30,15 @@ handoff so the next session can resume without re-explaining:
 
 ## When to invoke
 
-- The context window is approaching its limit mid-task.
 - You are stopping for the day but the work continues tomorrow.
 - You want the next session (or a teammate) to pick up exactly where this
   one stopped.
+- The context window is approaching its limit mid-task.
 
 Do NOT invoke for:
 
-- Recording a finished one-off task — that's gh:issue-create or
-  gh:discussion-create.
+- Recording a finished one-off task — that's gh-issue:create or
+  gh-issue:discussion-create.
 - Resuming after an API error or ESC in the SAME session — that's
   session:restart.
 - Auto-resuming after a token-limit reset via cron — that's

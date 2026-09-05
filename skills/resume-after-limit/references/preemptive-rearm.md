@@ -45,7 +45,7 @@ initial cycle 1 registration; both copies must stay in sync when edited.
 다르면 사용자에게 알리고 중단.
 
 만약 `/session:resume-after-limit` 스킬이 없는 환경이라면, fallback으로 원본
-명령을 직접 멱등 재실행 (단일 cycle 동작, PR #369 호환).
+명령을 직접 멱등 재실행 (단일 cycle 동작, PR dEitY719/dotfiles#369 호환).
 ```
 
 ## Update state file

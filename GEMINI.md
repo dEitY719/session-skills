@@ -82,7 +82,7 @@ On Antigravity read `antigravity-tools.md` in that same directory instead —
   item, and still runs `git status --short` to corroborate it. `close` reports
   C-2 as "TodoList unavailable on this harness" rather than passing it
   silently. `handoff` pulls remaining work from the conversation.
-- **No `Skill()` invocation.** `handoff` may call `Skill(gh:issue-create)` to
+- **No `Skill()` invocation.** `handoff` may call `Skill(gh-issue:create)` to
   open a tracking issue. Read that skill's `SKILL.md` from the `gh-*` plugin
   and follow it inline, or run `gh issue create` directly. The contract is just
   an issue number.

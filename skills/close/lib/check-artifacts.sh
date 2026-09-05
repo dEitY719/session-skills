@@ -25,8 +25,8 @@ set -uo pipefail
 _cra_lib_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 . "${_cra_lib_dir}/_repo_common.sh"
 
-# 편집/병합 부산물로 취급할 이름 글롭. shell-common/functions/file_cleanup.sh
-# 의 CLEANUP_DEFAULT_PATTERNS 와는 목적이 다르다 — 그쪽은 사람이 opt-in 으로
+# 편집/병합 부산물로 취급할 이름 글롭. `dEitY719/dotfiles` 의
+# shell-common/functions/file_cleanup.sh 의 CLEANUP_DEFAULT_PATTERNS 와는 목적이 다르다 — 그쪽은 사람이 opt-in 으로
 # 지우는 "백업/구버전 파일" 목록(del_file 용, bash 배열)이고, 여기는 세션이
 # 끊기며 남는 "편집기·병합 도구가 흘린 임시 산출물"만 read-only 로 잡는다.
 # 둘을 하나로 합치면 서로 다른 의도의 글롭이 뒤섞인다.
@@ -108,7 +108,7 @@ check_repo_artifacts() {
     # `ls-files` 는 -C 로 넘긴 디렉터리를 기준으로 상대경로를 찍는다. 호출자가
     # 저장소 하위 디렉터리를 넘기면(F-2 는 그걸 막지 않는다) `$_cra_repo` 기준
     # 상대경로를 `$_cra_top`(실제 최상위) 에 이어붙여 잘못된 절대경로가 나왔다
-    # (PR #1331 리뷰, agy). `-C` 도 `$_cra_top` 으로 통일해 조인 기준을 맞춘다.
+    # (PR dEitY719/dotfiles#1331 리뷰, agy). `-C` 도 `$_cra_top` 으로 통일해 조인 기준을 맞춘다.
     _cra_empty=""
     _cra_temp=""
     while IFS= read -r _cra_rel; do
@@ -206,7 +206,7 @@ main() {
 $repos
 EOF
 
-    # check-repos.sh 의 같은 리뷰(codex, PR #1331)에서 나온 지적을 여기도
+    # check-repos.sh 의 같은 리뷰(codex, PR dEitY719/dotfiles#1331)에서 나온 지적을 여기도
     # 대칭 적용한다: 저장소가 넘어왔는데 전부 무효면 그 사실을 드러낸다.
     # NOTE_COUNT 는 그대로 두므로(집계는 정확) VERDICT 는 바꾸지 않는다 —
     # C-3 는 안전-critical 한 BLOCKED 판정이 없어 check-repos.sh 만큼

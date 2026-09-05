@@ -17,14 +17,14 @@ and `<command>` with the values captured at registration time.
 다르면 사용자에게 알리고 중단.
 
 만약 `/session:resume-after-limit` 스킬이 없는 환경이라면, fallback으로 원본
-명령을 직접 멱등 재실행 (단일 cycle 동작, PR #369 호환).
+명령을 직접 멱등 재실행 (단일 cycle 동작, PR dEitY719/dotfiles#369 호환).
 ```
 
 ## Why self-contained
 
 The prompt embeds worktree/branch/command directly so it can resume safely
 even if `/session:resume-after-limit` is unavailable. When the companion skill
-exists (the normal case post-PR #370), it reads the state file's
+exists (the normal case post-PR dEitY719/dotfiles#370), it reads the state file's
 `cycles_remaining` to decide whether to pre-arm the next cycle.
 
 ## Why the same template for cycle 2..N

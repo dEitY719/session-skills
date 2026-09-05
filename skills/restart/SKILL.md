@@ -5,6 +5,7 @@ description: >-
   Use for /session:restart, "이어서 해줘", "끊긴 데서 재개", "다시 로그인했어", "resume after
   an API error or ESC". 토큰 리밋 리셋 후 크론 재개는 session:resume-after-limit.
 allowed-tools: Bash, Read, Edit, Write, Grep, Agent, TaskList, TaskUpdate
+license: MIT
 metadata:
   model_recommendation:
     tier: sonnet

@@ -12,14 +12,14 @@
 ## Examples
 
 ```
-# 1-shot safety net (default — same as PR #369 behavior)
-/session:rate-limit-guard --reset 18:00 /gh-issue-flow 399
+# 1-shot safety net (default — same as PR dEitY719/dotfiles#369 behavior)
+/session:rate-limit-guard --reset 18:00 /gh-flow:issue 399
 
 # Multi-cycle: re-arm up to 3 times, 305 min apart (5h05m default window)
-/session:rate-limit-guard --reset 18:00 --max-cycles 3 /gh-issue-flow 399
+/session:rate-limit-guard --reset 18:00 --max-cycles 3 /gh-flow:issue 399
 
 # Custom cycle window (e.g. 4h = 240 min)
-/session:rate-limit-guard --reset 18:00 --max-cycles 4 --cycle-window 240 /gh-issue-flow 399
+/session:rate-limit-guard --reset 18:00 --max-cycles 4 --cycle-window 240 /gh-flow:issue 399
 
 # Wrap a natural-language task
 /session:rate-limit-guard --reset 18:00 --max-cycles 2 "PR 200 리뷰 코멘트 처리해"
@@ -28,7 +28,8 @@
 ## Arguments
 
 - `--reset HH:MM` — local 24h reset time (REQUIRED, from `/usage`).
-- `--max-cycles N` — re-arm up to N cycles (default 1; default = PR #369 behavior).
+- `--max-cycles N` — re-arm up to N cycles (default 1; default =
+  PR dEitY719/dotfiles#369 behavior).
 - `--cycle-window M` — minutes between fires for cycles 2..N (default 305 = 5h05m).
   Cumulative fire times: cycle 2 = `cycle 1 fire + M`, cycle 3 = `cycle 2 fire + M`, …
 - `--buffer M` — **deprecated**. The 5-minute margin after `--reset` is now a
@@ -51,14 +52,14 @@ automatically when your token limit resets, even if you walked away.
 ## Multi-cycle scenarios
 
 A single Anthropic 5h reset window often isn't enough for an overnight
-`/gh-issue-flow`. With `--max-cycles 3 --cycle-window 305`:
+`/gh-flow:issue`. With `--max-cycles 3 --cycle-window 305`:
 
 - Cycle 1: fires at `--reset + 5min` (e.g. 18:05)
 - Cycle 2: fires at cycle-1-fire + 305min (e.g. 23:10)
 - Cycle 3: fires at cycle-2-fire + 305min (e.g. 04:15 next day)
 
 Each cycle re-runs the wrapped command. Idempotent workflows
-(`/gh-issue-flow`) detect already-done sub-steps and skip them. Successful
+(`/gh-flow:issue`) detect already-done sub-steps and skip them. Successful
 completion at any cycle clears all remaining crons + the state file.
 
 ## Prerequisites
@@ -71,7 +72,7 @@ completion at any cycle clears all remaining crons + the state file.
 
 ## When to invoke
 
-- Long workflows that may rate-limit (`/gh-issue-flow`, `/loop`).
+- Long workflows that may rate-limit (`/gh-flow:issue`, `/loop`).
 - Overnight runs where one 5h reset isn't enough — use `--max-cycles N`.
 - Any task you'd otherwise have to manually retrigger 2–3 hours later.
 
@@ -81,7 +82,7 @@ completion at any cycle clears all remaining crons + the state file.
 - The worktree's Claude Code session must be open or be reopened in this
   worktree for the cron to fire.
 - The wrapped command must be idempotent; re-running should detect and skip
-  already-completed sub-steps (e.g. `/gh-issue-flow` won't re-create an
+  already-completed sub-steps (e.g. `/gh-flow:issue` won't re-create an
   existing PR or duplicate a commit).
 - 5-min margin after `--reset` is hardcoded; `--buffer` is deprecated.
 - Cleanup runs only on definitive success — transient errors leave the

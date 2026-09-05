@@ -68,7 +68,7 @@ Three gaps matter here, and one of them is disqualifying:
   conversation (then corroborates it with `git status --short`), `close`
   reports its C-2 check as "TodoList unavailable on this harness" instead of
   passing silently, and `handoff` pulls remaining work from the conversation.
-- **No `Skill()` invocation.** `handoff` may hand off to `gh:issue-create` to
+- **No `Skill()` invocation.** `handoff` may hand off to `gh-issue:create` to
   open a tracking issue. Load that skill with OpenCode's `skill` tool if the
   `gh-*` plugin is installed, or just run `gh issue create`. The contract is an
   issue number.

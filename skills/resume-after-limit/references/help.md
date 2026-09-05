@@ -55,8 +55,8 @@ next cycle before running the wrapped command. This means:
   was originally invoked.
 - `.claude/.rate-limit-guard.json` exists (auto-created by the guard).
   Without it, the only fallback is an explicit `<command>` argument.
-- A pre-PR-#370 state file (no multi-cycle fields) is treated as
-  `max_cycles=1`, behaving exactly like PR #369.
+- A state file predating dEitY719/dotfiles#370 (no multi-cycle fields) is
+  treated as `max_cycles=1`, behaving exactly like PR dEitY719/dotfiles#369.
 
 ## Constraints
 
@@ -64,7 +64,7 @@ next cycle before running the wrapped command. This means:
 - Branch movement triggers a warning but does not stop execution
   (you may have rebased or moved HEAD between guard-time and resume-time).
 - Pre-emptive re-arm only fires when `cycles_remaining > 1`.
-- The wrapped command must be idempotent (`/gh-issue-flow` etc. are).
+- The wrapped command must be idempotent (`/gh-flow:issue` etc. are).
 - On a second failure (resume itself fails), the state file **and** the
   next-cycle cron are preserved so the next fire (or a manual re-invoke)
   can pick up where this attempt left off.

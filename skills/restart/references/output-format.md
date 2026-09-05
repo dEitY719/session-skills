@@ -11,7 +11,7 @@ or Step 2 emits the failure template instead.
 step 1/N: <what just landed>
 step 2/N: <what just landed>
 ...
-Next: <concrete command, e.g. /gh:issue-flow continue, /gh:pr-reply, /gh:pr>
+Next: <concrete command, e.g. /gh-flow:issue continue, /gh-pr:reply, /gh-pr:create>
 ```
 
 Rules:

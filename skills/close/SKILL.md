@@ -5,6 +5,7 @@ description: >-
   전혀 바꾸지 않고, 그린이면 `/exit` 안내만 한다(대신 실행하지 않는다). Use for /session:close, "세션
   닫아도 되나", "audit this session before I close it". 인계는 session:handoff.
 allowed-tools: Bash, Read, Grep, TaskList
+license: MIT
 metadata:
   model_recommendation:
     tier: sonnet
@@ -93,5 +94,5 @@ scratchpad 경로는 세션이 시스템 프롬프트로 받은 값을 그대로
 
 같은 "세션 끝" 자리, 다른 동사 — `session:handoff` (미완 작업을 이슈
 코멘트로 인계) · `session:restart` (중단된 작업을 이어서 재개) ·
-`write:task-history` / `obsidian:session-clip` (세션 기록 남기기). 본 스킬은
+`notes:task-history` / `pkm:obsidian-session-clip` (세션 기록 남기기). 본 스킬은
 감사만 하고 저장소를 바꾸지 않는다.

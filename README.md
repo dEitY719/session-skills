@@ -24,7 +24,7 @@ this repo owns no shared assets — it links out for the
 | `handoff` | `/session:handoff [issue] [remote] [--memory-only] [--new-issue]` | Writes *unfinished* work into a tracking-issue comment and an agent-local memory file, then prints a copy-paste resume sentence. Exactly two writes; nothing is committed or pushed. |
 | `rate-limit-guard` | `/session:rate-limit-guard --reset HH:MM [--max-cycles N] [--cycle-window M] <command>` | **[Claude Code only]** Arms a durable one-shot cron for `reset + 5min`, persists `.claude/.rate-limit-guard.json`, runs the wrapped command, and tears the safety net down on success. |
 | `resume-after-limit` | `/session:resume-after-limit [<command>]` | **[Claude Code only]** What that cron invokes. Reads the state file, stops hard on a worktree mismatch, pre-arms the next cycle, re-runs the wrapped command, cleans up on success. |
-| `schedule` | `/session:schedule [--time M] "<command>"` | **[Claude Code only]** Generic session-local deferral: run any slash command or task in M minutes (default 5). One-shot; the built-in `/schedule` is for recurring cloud routines. |
+| `schedule` | `/session:schedule [--time M] "<command>"` | **[Claude Code only]** Generic session-local deferral: run any slash command or task in M minutes (default 5). One-shot; the built-in `/loop` is for recurring interval runs. |
 | `worktree-spawn` | `/session:worktree-spawn [--ai <name>] [--task <slug>] [--base <ref>] [<branch>]` | Creates `../<project>-<agent>-<N>` on a `wt/<agent>/<N>` branch so parallel agents do not collide. Detects the agent, picks the next free index, resolves the base ref, and handles `git-crypt` repos. |
 | `worktree-teardown` | `/session:worktree-teardown <worktree-path> [--force] [--keep-branch] [--dry-run]` | Removes the worktree, syncs main, deletes the branch. **The destructive one** — blocks on uncommitted or unpushed work unless you pass `--force`. |
 
@@ -140,7 +140,7 @@ This repo owns none — deliberately.
   a reference file at load time — it points back to the canonical file.
 - **The reusable CI workflow** is
   [`harness-skills/.github/workflows/skill-check.yml`](https://github.com/dEitY719/harness-skills/blob/main/.github/workflows/skill-check.yml)
-  (#1410 D-10). See [CI](#ci).
+  (dEitY719/dotfiles#1410 D-10). See [CI](#ci).
 
 ## Layout
 
@@ -175,7 +175,7 @@ the full rationale and contribution rules.
 Skill directory names dropped their old prefixes. In dotfiles these were
 `devx-restart`, `devx-session-close`, `ai-worktree-spawn` and so on; here the
 plugin name already carries that meaning, so `/session:devx-restart` would
-stutter where `/session:restart` reads cleanly (#1410 F-4). Contrast
+stutter where `/session:restart` reads cleanly (dEitY719/dotfiles#1410 F-4). Contrast
 `pkm-skills`, which *keeps* `obsidian-` and `karakeep-` because those name two
 different external services inside one plugin.
 
