@@ -1,11 +1,13 @@
 ---
 name: handoff
 description: >-
-  컨텍스트 임계 근접 시 *미완* 작업을 트래킹 이슈 코멘트로 인계하고 auto-memory 와 재개 문장을 남긴다. Use for
-  /session:handoff, "핸드오프", "세션 넘겨", "컨텍스트 다 찼어", "hand off this session".
-  *완료* 기록은 gh:issue-create, 재개는 session:restart /
+  세션 경계에서 *미완* 작업을 트래킹 이슈 코멘트로 인계하고 auto-memory 와 재개 문장을 남긴다 —
+  퇴근·인수인계·컨텍스트 임계 어느 쪽이든. Use for /session:handoff, "핸드오프", "세션 넘겨",
+  "컨텍스트 다 찼어", "hand off this session".
+  *완료* 기록은 gh-issue:create, 재개는 session:restart /
   session:resume-after-limit.
 allowed-tools: Bash, Read, Write, Grep, TaskList
+license: MIT
 metadata:
   model_recommendation:
     tier: sonnet
@@ -37,7 +39,7 @@ Step 5 memory write never blocks — warn and continue.
 | `-h`/`--help`/`help` | usage 출력 후 정지 | — |
 
 Resolve `TARGET_REPO=<owner>/<repo>` from the remote URL (same procedure as
-gh:issue-read); unknown remote → list `git remote -v` and stop.
+gh-issue:read); unknown remote → list `git remote -v` and stop.
 
 ## Step 2: Resolve the Tracking Issue
 
@@ -45,7 +47,7 @@ Follow `references/issue-resolution.md`: explicit arg → conversation
 `#N` mentions → branch `wt/issue-N-*` → recent `gh` activity. Multiple
 candidates → pick the most-referenced or ask. No candidate → judge:
 substantive multi-session work gets a new tracking issue via
-Skill(gh:issue-create); trivial work degrades to `--memory-only`. The
+Skill(gh-issue:create); trivial work degrades to `--memory-only`. The
 duplicate-handoff guard (prior handoff comment from this session → update
 it, don't append) also lives there.
 
@@ -83,7 +85,7 @@ ending with the `Next:` hint.
   Never commit, push, edit code, or close/relabel issues.
 - Never overstate completion — unverified work is never listed as done.
 - Never invent a resume sentence that doesn't map to the tracking issue.
-- Reuses gh:issue-create (new tracking issue) and gh:issue-read
+- Reuses gh-issue:create (new tracking issue) and gh-issue:read
   (candidate validation).
 
 ## Related Skills
@@ -92,5 +94,5 @@ ending with the `Next:` hint.
   `session:resume-after-limit` (토큰 리밋 리셋 후 크론 재개). 재개 문장은 이들을
   구동하는 사람이 그대로 읽을 수 있어야 한다.
 - 본 스킬은 *미완* 작업의 세션 연속성 전용이다. 일회성 *완료* 기록은
-  `gh:issue-create` / `gh:discussion-create`, 완료 세션의 vault Inbox 노트는
-  `obsidian:session-clip` 몫이다.
+  `gh-issue:create` / `gh-issue:discussion-create`, 완료 세션의 vault Inbox 노트는
+  `pkm:obsidian-session-clip` 몫이다.

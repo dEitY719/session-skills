@@ -2,12 +2,12 @@
   {
     "query": "/session:restart 아까 하던 지점부터",
     "should_trigger": true,
-    "note": "slash-literal: update if the skill is renamed (#1410)"
+    "note": "slash-literal: update if the skill is renamed (dEitY719/dotfiles#1410)"
   },
   {
     "query": "/session:restart - the api dropped mid-turn",
     "should_trigger": true,
-    "note": "slash-literal: update if the skill is renamed (#1410)"
+    "note": "slash-literal: update if the skill is renamed (dEitY719/dotfiles#1410)"
   },
   {
     "query": "방금 응답이 중간에 툭 끊기면서 에러가 났어. 하던 파일 수정부터 다시 붙자.",

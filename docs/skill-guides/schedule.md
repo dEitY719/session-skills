@@ -12,14 +12,14 @@
 
 - "N분 후에 /skill 실행해" 처럼 단순 지연이 필요할 때
 - CI 나 리뷰 봇이 결과를 낼 시간을 벌어야 할 때
-- `gh:issue-flow` 처럼 흐름 중간에 대기 단계가 필요한 스킬의 구성 요소로
+- `gh-flow:issue` 처럼 흐름 중간에 대기 단계가 필요한 스킬의 구성 요소로
 
 ## 언제 안 쓰나
 
 | 상황 | 대신 쓸 것 |
 |---|---|
 | 토큰 리밋 리셋 특화 (상태 파일 + 정리 의미까지) | `session:rate-limit-guard` |
-| 반복 실행되는 클라우드 정기 루틴 | 내장 `/schedule` 스킬 |
+| 반복 주기로 계속 실행되는 루틴 | 내장 `/loop` 스킬 |
 
 이 스킬은 **세션 로컬 one-shot 지연** 전용이다.
 
@@ -41,8 +41,8 @@ M 이 양의 정수가 아니면 5로 되돌리고 경고한다.
 ### 예시
 
 ```
-/session:schedule --time 10 "/gh-pr-reply 350"
-/session:schedule /gh-pr-resolve-conflict 351
+/session:schedule --time 10 "/gh-pr:reply 350"
+/session:schedule /gh-resolve:conflict 351
 /session:schedule --time 3 "PR #200 리뷰 코멘트 처리해"
 ```
 

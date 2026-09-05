@@ -19,7 +19,8 @@
 # NF-4 사내PC 오탐 방지 — `~/.dotfiles-setup-mode` 가 internal 이고
 # origin 호스트가 github.com(GHES 가 아닌 common github)이면 미반영 커밋을
 # BLOCKED 가 아니라 NOTE 로 강등한다. 그 조합에서 common github 은
-# `docs/.ssot/pc-environment.md` §3 기준 pull only 이므로, 로컬에만 있는
+# `dEitY719/dotfiles` 의 `docs/.ssot/pc-environment.md` §3 기준 pull only
+# 이므로, 로컬에만 있는
 # 커밋은 비상 상황이 아니라 정상 상태다.
 #
 # Usage:
@@ -75,7 +76,8 @@ pass() {
 
 # read_setup_mode — `~/.dotfiles-setup-mode` 의 정규화된 값을 찍는다.
 #
-# shell-common/functions/gh_host.sh 의 `_gh_resolve_host` 와 같은 규칙
+# `dEitY719/dotfiles` 의 shell-common/functions/gh_host.sh `_gh_resolve_host`
+# 와 같은 규칙
 # (레거시 숫자값 1/2/3 → public/internal/external)을 쓰되, 파일을 직접
 # 읽는다 — 감사 도중 부수효과가 있는 파일을 source 하지 않기 위해서다.
 read_setup_mode() {
@@ -226,7 +228,7 @@ main() {
 
     # 넘겨받은 저장소가 전부 경로 없음/git 아님이면 CHECKED_COUNT 는 0인데
     # BLOCKED_COUNT 도 0 이라 "VERDICT: OK" 로 찍혀 왔다 — 실제로는 아무것도
-    # 감사하지 못한 채 성공으로 오인시킨다 (PR #1331 리뷰, codex). NF-6 취지대로
+    # 감사하지 못한 채 성공으로 오인시킨다 (PR dEitY719/dotfiles#1331 리뷰, codex). NF-6 취지대로
     # 이 경우도 "검사 대상 없음" 과 같은 층위로 명시한다.
     if [ "$CHECKED_COUNT" -eq 0 ]; then
         printf '\n전달된 저장소 %d개 중 유효하게 검사된 저장소가 0개다 — 전부 경로 없음/git 아님 (위 WARN 참고)\n' "$#"

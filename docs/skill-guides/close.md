@@ -13,7 +13,7 @@
 |---|---|
 | 컨텍스트가 차서 *미완* 작업을 다음 세션에 넘겨야 한다 | `session:handoff` |
 | 끊긴 턴을 이어서 재개해야 한다 | `session:restart` |
-| *완료* 작업을 기록으로 남기고 싶다 | `gh:issue-create`, `write:task-history` |
+| *완료* 작업을 기록으로 남기고 싶다 | `gh-issue:create`, `notes:task-history` |
 
 `close` 와 `handoff` 는 같은 순간에 서로 다른 질문에 답한다. close 는 "깨끗하게
 끝났나" 를 감사만 하고, handoff 는 "안 끝났으니 적어서 넘긴다" 를 실행한다. 한쪽이

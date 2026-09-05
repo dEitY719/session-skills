@@ -45,15 +45,20 @@ upstream 이 설정되지 않은 브랜치는 `@{u}` 가 없으므로 "upstream 
 (GHES 가 아닌 common github)이면 **원격 미반영 커밋을 BLOCKED 가 아니라
 NOTE 로 강등한다**.
 
-근거는 `docs/.ssot/pc-environment.md` §3 이다. `internal` 모드에서 common
+근거는 `dEitY719/dotfiles` 의 `docs/.ssot/pc-environment.md` §3 이다.
+`internal` 모드에서 common
 github 은 **pull only — 원격 반영 절대 금지**다. 그 조합에서 로컬에만 있는
 커밋은 사고가 아니라 설계상 정상 상태이므로, BLOCKED 로 두면 사내PC 세션이
 영원히 닫히지 않는다. GHES origin 은 read/write 이므로 강등 대상이 아니다.
 
-모드 판정은 `shell-common/functions/gh_host.sh` 의 `_gh_resolve_host` 와 같은
-규칙(레거시 숫자값 `1`/`2`/`3` → `public`/`internal`/`external`)을 쓰되,
-`$HOME/.dotfiles-setup-mode` 를 직접 읽는다. 감사 도중 부수효과가 있는
-파일을 source 하지 않기 위해서다.
+모드 판정은 `dEitY719/dotfiles` 의 `shell-common/functions/gh_host.sh` 의
+`_gh_resolve_host` 와 같은 규칙(레거시 숫자값 `1`/`2`/`3` →
+`public`/`internal`/`external`)을 쓰되, `$HOME/.dotfiles-setup-mode` 를 직접
+읽는다. 감사 도중 부수효과가 있는 파일을 source 하지 않기 위해서다.
+
+그 파일 읽기는 `[ -f ]` 로 가드되어 있다 — dotfiles 가 설치되지 않은 머신에서는
+NF-4 강등이 조용히 한 번도 발동하지 않고, 사내PC 세션이 이유 없이 계속 BLOCKED
+로 보고될 수 있다.
 
 ## C-2 TodoList
 

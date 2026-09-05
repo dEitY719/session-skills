@@ -7,7 +7,7 @@ Evaluate in order; the first hit wins. `--new-issue` skips straight to
 
 1. **Explicit argument** — `[issue-number]` passed by the user. Validate it
    exists and is OPEN via `gh issue view <N> --repo "$TARGET_REPO" --json
-   state,title` (the gh:issue-read fetch shape). CLOSED → warn and continue
+   state,title` (the gh-issue:read fetch shape). CLOSED → warn and continue
    down the chain (a closed issue is a finished thread, not a live handoff
    target) unless the user insists.
 2. **Conversation mentions** — scan this session for `#N` / `Issue #N` /
@@ -32,7 +32,7 @@ No issue found anywhere. Decide by the nature of the session's work:
 
 - **Substantive multi-session work** (an implementation mid-way, a design
   with open decisions, anything the next session must continue): create a
-  new tracking issue via `Skill(gh:issue-create)` and use its number. The
+  new tracking issue via `Skill(gh-issue:create)` and use its number. The
   handoff comment then becomes that issue's first status record.
 - **Trivial or nearly-done work** (small fix awaiting review, exploration
   with no follow-up): degrade to `--memory-only` and say so in the report.
@@ -62,5 +62,5 @@ from one session force the next reader to diff them.
 - GitHub unreachable AND no `--memory-only`: HARD-stop and ask — posting is
   the skill's core outward action; silently degrading it hides the failure.
 - GitHub unreachable WITH `--memory-only`: proceed; nothing needed the API.
-- `gh:issue-create` sub-skill fails: warn, degrade to memory-only, report
+- `gh-issue:create` sub-skill fails: warn, degrade to memory-only, report
   `posted=none (fallback)`.

@@ -5,7 +5,8 @@ description: >-
   colliding with other agents in the repo. Use for /session:worktree-spawn,
   "새로운 작업 시작", "격리된 작업 공간 만들어줘", "spawn a worktree", "start isolated work".
   Cleanup is session:worktree-teardown.
-allowed-tools: Bash, Read, Grep, Glob
+license: MIT
+allowed-tools: Bash, Read, Grep, Glob, EnterWorktree
 metadata:
   model_recommendation:
     tier: haiku
@@ -25,62 +26,43 @@ with other agents running in the same repository.
 
 Read `references/options-and-errors.md` for CLI options and error handling.
 
-## Execution Steps
+## Step 1: Decide the branch name (model judgment)
 
-Run these steps in order. Stop immediately on any error.
-Read `references/bash-commands.md` for exact bash implementations per step.
-
-### Step 1: Validate Preconditions
-
-Verify: git repo, NOT inside a worktree (block if so), warn on dirty state,
-check parent directory write permission.
-
-### Step 2: Detect AI Agent
-
-Read `references/agent-detection.md` for the full priority chain and env var table.
-Priority: `--ai` arg > `$AI_AGENT_NAME` > agent-specific env vars > `agent`.
-
-### Step 3: Compute Project Name and Index
-
-Extract project name via `basename "$(git rev-parse --show-toplevel)"`.
-Scan parent directory for `{project}-{agent}-N` pattern, assign max(N)+1.
-
-### Step 4: Determine Branch Name
-
-| Input | Branch Name |
+| Input | Branch name |
 |---|---|
 | No arguments | `wt/{agent}/{N}` |
 | `--task "slug"` | `wt/{agent}/{N}-{slug}` |
 | Explicit branch name | Use as-is |
 
-If `--task` is given in Korean, translate to English slug first (lowercase,
-hyphens, max 30 chars). Example: "로그인 기능" -> `login-feature`.
+`{agent}` is auto-detected and `{N}` is `max(existing index) + 1`; the script
+does both. Read `references/agent-detection.md` only when overriding with
+`--ai`. A Korean `--task` must be translated to an English slug first
+(lowercase, hyphens, max 30 chars) — "로그인 기능" becomes
+`--task "login feature"`. The script normalizes but cannot translate.
 
-### Step 5: Determine Base Ref
+## Step 2: Create the worktree
 
-Priority: `--base` arg > `origin/main` > `main`/`master` > current HEAD.
+```
+bash "${SKILL_DIR}/lib/spawn.sh" [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [<branch>]
+```
 
-### Step 6: Create Worktree
+The script validates preconditions (git repo, not already inside a worktree,
+writable parent), detects the agent, takes the spawn lock, computes the index,
+resolves the base ref (`--base` > `origin/main` > `main`/`master` > `HEAD`),
+creates the worktree with git-crypt auto-unlock or bypass, appends the audit
+log, and prints the report. Stop and surface stderr on any non-zero exit.
+`references/bash-commands.md` is its full contract: arguments, exit codes,
+output lines, and what stays model judgment.
 
-git-crypt detection happens in Step 1.5. The full key-resolution priority and
-unlock sequence live in `references/bash-commands.md` (Step 1.5 / Step 6). Two paths:
+**Claude Code only:** `EnterWorktree` creates and enters the worktree natively;
+this skill still owns the index scan, the git-crypt unlock and the audit log.
+Read `references/native-tools.md` and follow it in place of this step. Every
+other harness (Codex, Gemini, Kimi, opencode) has no such tool and uses the
+script above.
 
-- **Key found (auto-unlock)**: decrypt `.env` / `.secrets/` normally. Caveat:
-  use explicit `git add <path>`, never `-A` / `.`, in auto-unlocked worktrees
-  (git-crypt files may show as `M` from a raw-byte vs. textconv mismatch).
-- **Key not found (bypass, backward-compatible)**: filters disabled, encrypted
-  files stay binary; print the `gc-export-key` hint for the next spawn.
+## Step 3: Report and move
 
-Branch exists: `git worktree add <path> <branch>`. New branch:
-`git worktree add -b <branch> <path> <base_ref>`.
-
-### Step 7: Log the Creation
-
-Append structured log to `$(git rev-parse --git-common-dir)/ai-worktree-spawn.log`.
-
-### Step 8: Report and Move
-
-Print result, then `cd` into the new worktree:
+The script prints:
 
 ```
 [OK] Worktree ready
@@ -88,12 +70,16 @@ Print result, then `cd` into the new worktree:
   Branch: wt/claude/1
   Base:   origin/main
   git-crypt: unlocked via ~/.config/git-crypt/my-app.key
-  Teardown: git push -u origin <branch> && git worktree remove <path> && git branch -d <branch>
+  Teardown: git push -u origin wt/claude/1 && git worktree remove ../my-app-claude-1 && git branch -d wt/claude/1
+  cd ../my-app-claude-1
 ```
 
 The `git-crypt` line only appears when the repo uses git-crypt — `unlocked via
-<key path>` (auto-unlock) or `disabled (no key file)` (bypass, also prints the
-`git-crypt export-key` hint).
+<key path>` (auto-unlock) or `disabled (no key file)` (bypass, which also
+prints the `git-crypt export-key` hint).
 
-The script cannot change the caller's cwd. Print the `cd` command as guidance,
-then execute it yourself as the AI agent.
+In an auto-unlocked worktree use explicit `git add <path>`, never `-A` or `.`:
+git-crypt files can show as `M` from a raw-byte vs. textconv mismatch.
+
+The script cannot change the caller's cwd. Relay the `cd` command it prints as
+guidance, then execute it yourself as the AI agent.

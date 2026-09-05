@@ -41,7 +41,7 @@ Do NOT invoke for:
 3. Splits the next action into 1-tool-call steps. Delegates broad reads /
    searches to `Agent(Explore)` or `Agent(general-purpose)`.
 4. Updates TodoList status after each step. Hands control back to the
-   originating flow (e.g. `gh:issue-flow`) when the resumed task is done.
+   originating flow (e.g. `gh-flow:issue`) when the resumed task is done.
 
 ## Constraints
 

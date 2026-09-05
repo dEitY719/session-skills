@@ -37,8 +37,8 @@ Do NOT invoke for:
 - 컨텍스트 한계로 다음 세션에 넘겨야 할 때 — 그건 `session:handoff`
   다(이 스킬은 BLOCKED 면 그쪽으로 안내만 한다).
 - 중단된 작업을 이어서 하고 싶을 때 — 그건 `session:restart` 다.
-- 세션 기록을 남기고 싶을 때 — `write:task-history` 나
-  `obsidian:session-clip` 이다.
+- 세션 기록을 남기고 싶을 때 — `notes:task-history` 나
+  `pkm:obsidian-session-clip` 이다.
 - 잔여 작업을 정리해 달라는 요청 — 이 스킬은 감사만 한다.
 
 ## Behavior summary

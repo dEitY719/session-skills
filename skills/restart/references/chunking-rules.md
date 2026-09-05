@@ -15,7 +15,8 @@ single-tool-call increments so the next flake costs less:
 ## Subagent delegation thresholds
 
 Anything that would dump > ~200 lines into the main context MUST be
-delegated to a subagent. Triggers:
+delegated to a subagent — a turn that dies mid-dump re-runs the whole
+dump. Triggers:
 
 - Broad code search across the repo (unscoped `grep` / `rg`).
 - `find` over the whole tree.
@@ -29,4 +30,3 @@ Routing:
   `Agent(subagent_type="general-purpose")`.
 
 Brief the agent with the resume target and cap the response at ~200 words.
-Keeping the main context lean is the whole reason this skill exists.

@@ -13,7 +13,7 @@
 | 상황 | 대신 쓸 것 |
 |---|---|
 | 세션이 깨끗하게 끝났고 감사만 하고 싶다 | `session:close` |
-| *완료* 작업을 일회성 기록으로 남긴다 | `gh:issue-create`, `gh:discussion-create` |
+| *완료* 작업을 일회성 기록으로 남긴다 | `gh-issue:create`, `gh-issue:discussion-create` |
 | 같은 세션에서 끊긴 턴을 이어서 재개한다 | `session:restart` |
 | 토큰 리밋 리셋 후 크론으로 재개한다 | `session:resume-after-limit` |
 
