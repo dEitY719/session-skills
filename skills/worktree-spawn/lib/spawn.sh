@@ -55,9 +55,9 @@ DRY_RUN=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help|help) usage; exit 0 ;;
-        --ai)           AGENT_OVERRIDE="${2:-}"; shift 2 ;;
-        --task)         TASK_SLUG="${2:-}"; shift 2 ;;
-        --base)         BASE_OVERRIDE="${2:-}"; shift 2 ;;
+        --ai)           AGENT_OVERRIDE="${2:?Error: --ai needs a value}"; shift 2 ;;
+        --task)         TASK_SLUG="${2:?Error: --task needs a value}"; shift 2 ;;
+        --base)         BASE_OVERRIDE="${2:?Error: --base needs a value}"; shift 2 ;;
         --dry-run)      DRY_RUN=true; shift ;;
         --*)            echo "Error: Unknown option: $1" >&2; usage >&2; exit 1 ;;
         *)              EXPLICIT_BRANCH="$1"; shift ;;

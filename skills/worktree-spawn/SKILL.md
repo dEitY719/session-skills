@@ -25,6 +25,7 @@ Create an isolated git worktree so this AI agent can work without interfering
 with other agents running in the same repository.
 
 Read `references/options-and-errors.md` for CLI options and error handling.
+`SKILL_DIR` = this file's directory.
 
 ## Step 1: Decide the branch name (model judgment)
 
