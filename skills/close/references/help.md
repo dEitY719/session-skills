@@ -12,7 +12,7 @@
 
 | Option | Description | Default |
 |---|---|---|
-| `--repos <path,...>` | 자동 수집이 놓친 저장소를 보탠다(치환 아님) | 없음 — 대화에서 자동 수집 |
+| `--repos <path,...>` | 자동 수집이 놓친 저장소를 보탠다(치환 아님) | 없음 — Step 2 가 대화에서 자동 수집 |
 | `-h`/`--help`/`help` | 이 help 를 출력하고 정지 | — |
 
 ## What it does
