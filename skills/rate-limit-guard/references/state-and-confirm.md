@@ -39,8 +39,12 @@ reset time plus the constant 5-minute margin.
   • 원본 명령: <command>
   • 자동 재개 시각: <HH:MM + 5min> (job: <id>)
 이제 원본 명령을 실행합니다 ↓
-Next: 안전망을 취소하려면 CronDelete(<id>) 또는 rm -f .claude/.rate-limit-guard.json
+Next: 취소하려면 CronDelete(<id>) → rm -f .claude/.rate-limit-guard.json (순서대로 둘 다)
 ```
+
+Both, in that order. The invariant above is that the state file exists *iff* a
+guard cron is scheduled — removing only the file leaves the durable cron armed
+and orphaned, and it will still fire.
 
 ## Step 6 teardown output template
 
