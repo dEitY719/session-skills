@@ -48,14 +48,15 @@ Follow `references/issue-resolution.md`: explicit arg → conversation
 candidates → pick the most-referenced or ask. No candidate → judge:
 substantive multi-session work gets a new tracking issue via
 Skill(gh-issue:create); trivial work degrades to `--memory-only`. The
-duplicate-handoff guard (prior handoff comment from this session → update
-it, don't append) also lives there.
+duplicate-handoff guard also lives there — `bash
+"${SKILL_DIR}/lib/find-handoff-comment.sh" "$TARGET_REPO" <N>` prints a
+comment id to PATCH, or nothing, meaning POST a new one.
 
 ## Step 3: Compose the Handoff Artifact
 
-Build the comment body per `references/handoff-template.md`. Honesty rules
-are non-negotiable: only merged PRs and tests that ran green in this session
-go under "완료 (검증됨)"; everything else is "미검증" or "남은 작업". Pull
+Build the comment body per `references/handoff-template.md`, honouring its
+"Honesty rules (non-negotiable)" section — that is the one model-facing
+statement of what may be called done, and it is not restated here. Pull
 remaining work from the session TodoList (TaskList) when one exists.
 
 ## Step 4: Post the Comment
@@ -83,7 +84,6 @@ ending with the `Next:` hint.
 
 - Writes are exactly two artifacts: one issue comment, one memory file.
   Never commit, push, edit code, or close/relabel issues.
-- Never overstate completion — unverified work is never listed as done.
 - Never invent a resume sentence that doesn't map to the tracking issue.
 - Reuses gh-issue:create (new tracking issue) and gh-issue:read
   (candidate validation).
