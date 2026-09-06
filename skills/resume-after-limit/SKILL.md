@@ -37,7 +37,7 @@ If arg #1 is `-h`/`--help`/`help`, print `references/help.md` verbatim and stop.
 test -f .claude/.rate-limit-guard.json && cat .claude/.rate-limit-guard.json
 ```
 
-Parse `command`, `worktree`, `branch`, `max_cycles`, `cycles_remaining`, `cycle_window_min` (jq/Python). Missing multi-cycle fields default to `max_cycles=1`, `cycles_remaining=1`, `cycle_window_min=305` (PR dEitY719/dotfiles#369 compat).
+Parse `command`, `worktree`, `branch`, `max_cycles`, `cycles_remaining`, `cycle_window_min` (jq/Python). Missing multi-cycle fields default to `max_cycles=1`, `cycles_remaining=1`, `cycle_window_min=305` (single-cycle behavior).
 
 ### 2. Resolve the Command
 
@@ -56,18 +56,15 @@ PWD_NOW=$(pwd); BRANCH=$(git branch --show-current 2>/dev/null || echo unknown)
 
 ### 4. Pre-emptive Re-arm
 
+`SKILL_DIR` = this file's directory.
+
 If `cycles_remaining > 1`, register the next cycle's cron **before** running
 the wrapped command per `references/preemptive-rearm.md` (fire-time arithmetic,
 `CronCreate` args, state-file rewrite). Save `<NEXT_ID>` for Step 7. Else skip.
 
 ### 5. Announce
 
-```
-[RESUME] [rate-limit-guard] 재개: <command>
-  • 워크트리: <PWD_NOW>  • 브랜치: <BRANCH>
-  • 사이클: <max_cycles - cycles_remaining + 1>/<max_cycles>
-  • 멱등 실행 — 이미 완료된 sub-step은 스킵.
-```
+Print the announce block in `references/output-format.md` verbatim.
 
 ### 6. Execute the Command
 
@@ -75,17 +72,11 @@ Hand off to the wrapped command. The wrapped workflow's own idempotency handles 
 
 ### 7. Cleanup on Success
 
-In the same turn after success:
-
-```bash
-[ -n "$NEXT_ID" ] && CronDelete <NEXT_ID>   # only if Step 4 ran
-rm -f .claude/.rate-limit-guard.json
-```
-
-Print `[OK] 재개 완료 — 안전망 상태 파일 정리됨`. The just-fired cron auto-deleted
-(`recurring: false`); the Step 4 next-cycle cron must be explicitly cancelled.
-On failure (transient or otherwise), **leave state + next cron** in place — the
-next fire re-triggers this skill, or the user re-invokes manually.
+In the same turn after success, run the cleanup sequence and print the
+terminal line in `references/output-format.md`. On failure (transient or
+otherwise), **leave state + next cron** in place and print that file's failure
+terminal line instead — the next fire re-triggers this skill, or the user
+re-invokes manually.
 
 ## Constraints
 

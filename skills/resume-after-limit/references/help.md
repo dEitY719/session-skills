@@ -5,10 +5,12 @@
 ```
 /session:resume-after-limit              # read state file, resume
 /session:resume-after-limit <command>    # explicit override (cron path)
-/session:resume-after-limit -h           # show this help
-/session:resume-after-limit --help
-/session:resume-after-limit help
 ```
+
+| Option | Description | Default |
+|---|---|---|
+| `[command]` | 재개할 명령 (크론 경로에서 명시적으로 넘길 때) | state 파일의 `command` |
+| `-h` / `--help` / `help` | 이 도움말 출력 후 정지 | — |
 
 ## What it does
 
@@ -55,8 +57,8 @@ next cycle before running the wrapped command. This means:
   was originally invoked.
 - `.claude/.rate-limit-guard.json` exists (auto-created by the guard).
   Without it, the only fallback is an explicit `<command>` argument.
-- A state file predating dEitY719/dotfiles#370 (no multi-cycle fields) is
-  treated as `max_cycles=1`, behaving exactly like PR dEitY719/dotfiles#369.
+- A state file with no multi-cycle fields is treated as `max_cycles=1`,
+  `cycles_remaining=1`, `cycle_window_min=305` — single-cycle behavior.
 
 ## Constraints
 
