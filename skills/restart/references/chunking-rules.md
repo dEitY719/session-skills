@@ -12,7 +12,7 @@ single-tool-call increments so the next flake costs less:
 - **One subagent per investigation.** Don't fan out 4 in parallel here —
   the whole point is to reduce blast radius on the next flake.
 
-## Subagent delegation thresholds
+## Subagent delegation triggers
 
 A search that is likely to fail or need retries MUST be delegated to a
 subagent — a turn that dies mid-search re-runs the whole thing from
@@ -23,7 +23,7 @@ scratch. Triggers:
 
 Routing:
 
-- Broad code search / cross-file consistency → `Agent(subagent_type="Explore")`.
+- Broad code search → `Agent(subagent_type="Explore")`.
 - Multi-step research or "go figure out X" →
   `Agent(subagent_type="general-purpose")`.
 
