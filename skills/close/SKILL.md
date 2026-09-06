@@ -27,7 +27,7 @@ stop. No other tool calls.
 
 | Option | Description | Default |
 |---|---|---|
-| `--repos <path,...>` | 자동 수집이 놓친 저장소를 **보탠다**(치환 아님) | 없음 — Step 2 가 자동 수집 |
+| `--repos <path,...>` | 자동 수집이 놓친 저장소를 보탠다(치환 아님) | 없음 — Step 2 가 대화에서 자동 수집 |
 | `-h`/`--help`/`help` | 위 Help 출력 후 정지 | — |
 
 ## Step 2: 대상 저장소 수집 (F-2, 판단)
@@ -39,9 +39,8 @@ stop. No other tool calls.
    그대로 쓴다(추측 금지).
 3. `--repos` 로 받은 경로.
 
-cwd 하나만 보고 끝내지 않는다 — 워크트리를 여러 개 띄운 세션이 기본이다.
-목록이 0개면 Step 3 를 건너뛰지 말고 그대로 넘겨라. 스크립트가 "검사 대상
-없음" 을 명시한다 (NF-6).
+cwd 하나만 보고 끝내지 않는다 — 워크트리 여러 개가 기본이다. 목록이 0개면
+Step 3 를 건너뛰지 말고 그대로 넘겨라. 스크립트가 "검사 대상 없음" 을 명시한다 (NF-6).
 
 ## Step 3: C-1 git 상태 (F-3)
 
@@ -98,3 +97,4 @@ scratchpad 경로는 세션이 시스템 프롬프트로 받은 값을 그대로
 같은 "세션 끝" 자리, 다른 동사 — `session:handoff` (미완 작업을 이슈
 코멘트로 인계) · `session:restart` (중단된 작업을 이어서 재개) ·
 `notes:task-history` / `pkm:obsidian-session-clip` (세션 기록 남기기).
+본 스킬은 감사만 하고 저장소를 바꾸지 않는다.
