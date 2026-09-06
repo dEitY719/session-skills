@@ -10,6 +10,11 @@
 /session:close help                     # show this help
 ```
 
+| Option | Description | Default |
+|---|---|---|
+| `--repos <path,...>` | 자동 수집이 놓친 저장소를 보탠다(치환 아님) | 없음 — 대화에서 자동 수집 |
+| `-h`/`--help`/`help` | 이 help 를 출력하고 정지 | — |
+
 ## What it does
 
 세션을 닫기 전에 "지금 닫으면 잃어버리는 것" 이 있는지 고정된 4개 항목으로
