@@ -5,7 +5,7 @@
 ALWAYS use this exact section skeleton (no emojis — CLAUDE.md repo policy):
 
 ```markdown
-<!-- session-handoff -->
+<!-- session-handoff:<session-id> -->
 ## Session handoff — <YYYY-MM-DD HH:MM>
 
 ### 완료 (검증됨)
@@ -30,6 +30,19 @@ ALWAYS use this exact section skeleton (no emojis — CLAUDE.md repo policy):
 ### 재개 포인터
 `#<N> <next-step> 진행`
 ```
+
+### `<session-id>` in the marker
+
+`<session-id>` is this session's identifier — Claude Code exports it as
+`$CLAUDE_CODE_SESSION_ID`; on a harness that exposes none, mint one random
+token per session (`uuidgen`, or `date +%s`-plus-`$$`) and reuse it for the
+whole session. Only `[A-Za-z0-9_-]` characters.
+
+It is what makes the Step 2 duplicate guard safe: the guard matches the
+marker verbatim, so it can only ever return a comment THIS session wrote.
+A prior session's handoff — and the legacy marker with no id — never
+matches, so the worst case is one extra comment, never an overwrite of
+someone else's history.
 
 ### Honesty rules (non-negotiable)
 
