@@ -12,7 +12,7 @@
 ## Examples
 
 ```
-# 1-shot safety net (default — same as PR dEitY719/dotfiles#369 behavior)
+# 1-shot safety net (default — single cycle)
 /session:rate-limit-guard --reset 18:00 /gh-flow:issue 399
 
 # Multi-cycle: re-arm up to 3 times, 305 min apart (5h05m default window)
@@ -27,13 +27,14 @@
 
 ## Arguments
 
-- `--reset HH:MM` — local 24h reset time (REQUIRED, from `/usage`).
-- `--max-cycles N` — re-arm up to N cycles (default 1; default =
-  PR dEitY719/dotfiles#369 behavior).
-- `--cycle-window M` — minutes between fires for cycles 2..N (default 305 = 5h05m).
-  Cumulative fire times: cycle 2 = `cycle 1 fire + M`, cycle 3 = `cycle 2 fire + M`, …
-- `--buffer M` — **deprecated**. The 5-minute margin after `--reset` is now a
-  hardcoded constant. Passing `--buffer` emits a warning and the value is ignored.
+| Option | Description | Default |
+|---|---|---|
+| `--reset HH:MM` | 토큰 리밋 리셋 시각, 24h local (필수 — `/usage` 로 확인) | — |
+| `--max-cycles N` | 재무장할 최대 사이클 수 | `1` |
+| `--cycle-window M` | 사이클 2..N 간 간격(분). 누적 — cycle 2 = `cycle 1 fire + M`, cycle 3 = `cycle 2 fire + M`, … | `305` (5h05m) |
+| `<command>` | 감쌀 명령 (따옴표 보존) | — |
+| `--buffer M` | 폐지됨 — `--reset` 뒤 5분 마진은 상수. `[WARN]` 후 값 무시 | — |
+| `-h` / `--help` / `help` | 이 도움말 출력 후 정지 | — |
 
 ## What it does
 

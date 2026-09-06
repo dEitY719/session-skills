@@ -39,4 +39,14 @@ reset time plus the constant 5-minute margin.
   • 원본 명령: <command>
   • 자동 재개 시각: <HH:MM + 5min> (job: <id>)
 이제 원본 명령을 실행합니다 ↓
+Next: 안전망을 취소하려면 CronDelete(<id>) 또는 rm -f .claude/.rate-limit-guard.json
+```
+
+## Step 6 teardown output template
+
+Printed verbatim after the cron and state file are removed on success.
+
+```
+[OK] 안전망 해제 — 정상 완료
+Next: 다음 장시간 실행 전에 /usage 로 리셋 시각을 다시 확인하세요
 ```
