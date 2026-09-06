@@ -14,14 +14,12 @@ single-tool-call increments so the next flake costs less:
 
 ## Subagent delegation thresholds
 
-Anything that would dump > ~200 lines into the main context MUST be
-delegated to a subagent — a turn that dies mid-dump re-runs the whole
-dump. Triggers:
+A search that is likely to fail or need retries MUST be delegated to a
+subagent — a turn that dies mid-search re-runs the whole thing from
+scratch. Triggers:
 
 - Broad code search across the repo (unscoped `grep` / `rg`).
 - `find` over the whole tree.
-- Reading a 1k-line file when only a slice is needed.
-- Multi-file conformance / consistency checks.
 
 Routing:
 
