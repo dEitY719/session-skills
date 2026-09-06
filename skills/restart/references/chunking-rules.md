@@ -14,16 +14,18 @@ single-tool-call increments so the next flake costs less:
 
 ## Subagent delegation triggers
 
-A search that is likely to fail or need retries MUST be delegated to a
-subagent — a turn that dies mid-search re-runs the whole thing from
+A search or check that is likely to fail or need retries MUST be delegated
+to a subagent — a turn that dies partway re-runs the whole thing from
 scratch. Triggers:
 
 - Broad code search across the repo (unscoped `grep` / `rg`).
 - `find` over the whole tree.
+- Multi-file conformance / consistency checks — the slowest thing to redo
+  from scratch if the turn dies partway through.
 
 Routing:
 
-- Broad code search → `Agent(subagent_type="Explore")`.
+- Broad code search / cross-file consistency → `Agent(subagent_type="Explore")`.
 - Multi-step research or "go figure out X" →
   `Agent(subagent_type="general-purpose")`.
 
