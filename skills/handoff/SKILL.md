@@ -49,8 +49,9 @@ candidates → pick the most-referenced or ask. No candidate → judge:
 substantive multi-session work gets a new tracking issue via
 Skill(gh-issue:create); trivial work degrades to `--memory-only`. The
 duplicate-handoff guard also lives there — `bash
-"${SKILL_DIR}/lib/find-handoff-comment.sh" "$TARGET_REPO" <N>` prints a
-comment id to PATCH, or nothing, meaning POST a new one.
+"${SKILL_DIR}/lib/find-handoff-comment.sh" "$TARGET_REPO" <N> "$SESSION_ID"`
+prints THIS session's handoff comment id to PATCH, or nothing → POST a new
+one; being session-scoped it can never return another session's comment.
 
 ## Step 3: Compose the Handoff Artifact
 

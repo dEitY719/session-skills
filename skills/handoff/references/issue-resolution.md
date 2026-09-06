@@ -45,16 +45,21 @@ No issue found anywhere. Decide by the nature of the session's work:
 Before posting, ask for an existing handoff comment:
 
 ```bash
-bash "${SKILL_DIR}/lib/find-handoff-comment.sh" "$TARGET_REPO" <N>
+bash "${SKILL_DIR}/lib/find-handoff-comment.sh" "$TARGET_REPO" <N> "$SESSION_ID"
 ```
 
-Empty output means POST a new comment. An id means a `<!-- session-handoff -->`
-comment authored by you is already on the issue — the script cannot tell which
-session wrote it, so decide: posted in THIS session, update it in place (`gh
-api "repos/$TARGET_REPO/issues/comments/<id>" --method PATCH --field
-body=@<artifact>`) rather than appending a second one, which would force the
-next reader to diff two handoffs; left by an earlier session, POST a new
-comment and leave that history intact.
+`$SESSION_ID` is the same session identifier the Step 3 marker carries
+(`references/handoff-template.md` → "`<session-id>` in the marker").
+
+An id means THIS session already posted a handoff on the issue: update it in
+place (`gh api "repos/$TARGET_REPO/issues/comments/<id>" --method PATCH
+--field body=@<artifact>`) instead of appending a second one, which would
+force the next reader to diff two handoffs.
+
+Empty output means POST a new comment. That is also what an earlier session's
+handoff produces — the marker it carries holds a different id, so it cannot
+match and cannot be overwritten. No session-ownership judgment is left to the
+caller.
 
 ## Failure modes
 
