@@ -62,8 +62,8 @@ schema (with field descriptions) and the verbatim output template.
 ### 6. Execute, then Cleanup on Success
 
 Hand off to the wrapped command. On success:
-`CronDelete(<id>)` → `rm -f .claude/.rate-limit-guard.json` →
-`[OK] 안전망 해제 — 정상 완료`.
+`CronDelete(<id>)` → `rm -f .claude/.rate-limit-guard.json` → `[OK] 안전망 해제`
++ `Next:` — print the teardown block in `references/state-and-confirm.md` verbatim.
 
 On transient errors (rate limit / network / timeout), **leave the cron in
 place** — that is exactly when the safety net should fire.
@@ -74,7 +74,7 @@ place** — that is exactly when the safety net should fire.
 - Never use `recurring: true` or `durable: false`.
 - Never auto-cleanup on transient errors.
 - Never invoke from inside another skill — user-triggered only.
-- `--max-cycles 1` (default) preserves PR dEitY719/dotfiles#369 behavior.
+- `--max-cycles 1` (default) = single cycle — schedule exactly one cron.
 
 ## Related Skills
 
