@@ -4,7 +4,7 @@ description: >-
   [Claude Code Only] 슬래시 명령/작업을 N분 뒤 실행되도록 예약(기본 5분). `CronCreate` 도구 필요 —
   Codex / Gemini CLI 에서는 동작하지 않는다. Use for /session:schedule, "N분 후에 /skill
   실행해", "schedule /skill in N minutes". 세션 로컬 지연 전용 — 반복 주기 실행은 내장 /loop 스킬.
-allowed-tools: Bash, CronCreate
+allowed-tools: Bash, Read, CronCreate
 license: MIT
 metadata:
   model_recommendation:
