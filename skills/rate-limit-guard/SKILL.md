@@ -70,6 +70,10 @@ place** — that is exactly when the safety net should fire.
 
 ## Constraints
 
+- If `CronCreate` is unavailable or the Step 3 call fails, stop and report —
+  never substitute `sleep`, a background shell, an `at` job, or a promise to
+  act later; none of them wake an agent, so each reports success while
+  nothing is scheduled.
 - Never schedule without explicit `--reset HH:MM`.
 - Never use `recurring: true` or `durable: false`.
 - Never auto-cleanup on transient errors.
