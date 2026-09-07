@@ -46,7 +46,7 @@ script's job.
    main. Sync before the call so the delete is evaluated against real state:
    `git -C <main-repo> checkout main && git -C <main-repo> pull origin main`
    (`master` if there is no `main`). On a conflict, stop and hand off to
-   `gh-resolve:conflict` before removing anything -- don't resolve it here.
+   `gh-resolve:conflict` before removing anything.
 2. **Remove.** `ExitWorktree` with `action: "remove"`. Omit `discard_changes` --
    let the tool run the guard. If it refuses, surface its list of uncommitted
    files and unmerged commits and stop. Only re-issue with
