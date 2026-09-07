@@ -41,5 +41,13 @@ safety net (state file + cleanup) is `session:rate-limit-guard`.
 
 ## Stop conditions
 
-- `CronCreate` tool is unavailable (non-Claude-Code harness) — refuse and explain.
+- `CronCreate` is unavailable (non-Claude-Code harness) or its call fails — print
+  `[FAIL] cannot schedule — <reason>` and stop. Never substitute `sleep`, a
+  background shell, an `at` job, or a promise to act later: none of them wake an
+  agent, so each reports success while nothing is scheduled.
 - `--time` is not a positive integer — fall back to default `5` and warn the user.
+
+## Cancelling
+
+The success line reports a job id. `CronDelete(<id>)` cancels the pending run;
+`CronList` shows what is still queued.
