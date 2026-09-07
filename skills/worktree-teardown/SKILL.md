@@ -60,11 +60,14 @@ the worktree and does not sync main first. Read `references/native-tools.md`
 and follow it when the session is already in the worktree it is done with.
 Every other harness (Codex, Gemini, Kimi, opencode) uses the script above.
 
-## Step 3: Resolve a pull conflict, if any
+## Step 3: Hand off a pull conflict — do not resolve it here
 
 If the sync conflicts, the script prints `Conflict detected during pull.` and
-the conflicting file list, then continues to the safe branch delete. Resolve
-those files, commit, and say so in the report — do not leave main mid-conflict.
+the conflicting file list, then still finishes the branch delete and the
+report below (the worktree teardown itself succeeded; only the main sync is
+degraded — see the `Now on:` line). Do not attempt to resolve it yourself:
+point the user at `gh-resolve:conflict`. Resolving merge conflicts needs more
+reasoning than this skill's declared `haiku` tier budgets for.
 
 ## Step 4: Report
 

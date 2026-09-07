@@ -6,19 +6,8 @@
 /session:worktree-teardown <worktree-path> [--force] [--keep-branch] [--dry-run]
 ```
 
-Run from the **main repo** (not from inside a worktree).
-
-## Options
-
-| Option | Description | Default |
-|---|---|---|
-| `<worktree-path>` | Path to the worktree to remove (required) | — |
-| `--force` | Skip pre-flight checks, force remove dirty worktree, force delete unmerged branch | `false` |
-| `--keep-branch` | Don't delete the branch after removing worktree | `false` |
-| `--dry-run` | Print plan without executing anything | `false` |
-
-When `--dry-run` is specified, print the full plan (worktree path, branch,
-actions to take) and stop without executing anything.
+Run from the **main repo** (not from inside a worktree). See
+`references/help.md` for the full options table and examples.
 
 ## Error Handling
 
@@ -32,4 +21,4 @@ actions to take) and stop without executing anything.
 | Worktree remove fails | Try `--force` if opted in, else stop |
 | Branch not fully merged | Warn, skip branch delete (unless `--force`) |
 | Main branch not found | Try `master`, then error |
-| Pull conflict | AI agent attempts resolution, reports to user |
+| Pull conflict | Script finishes teardown, flags it in the report; hand off to `gh-resolve:conflict` |
