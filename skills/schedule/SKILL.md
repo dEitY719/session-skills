@@ -25,6 +25,12 @@ If args is `-h`/`--help`/`help`, read `references/help.md` verbatim and stop.
 > session-spawn scheduler, so this skill cannot run there.
 > See [issue #362](https://github.com/dEitY719/dotfiles/issues/362).
 
+**Stop-on-error policy** — HARD-stop when `CronCreate` is unavailable or its call
+fails: print the Step 4 `[FAIL]` line and stop. Never emulate the delay with
+`sleep`, a background shell, an `at` job, or a promise to act later — none of
+those can wake an agent, so each reports success while nothing is scheduled.
+Soft-fail: a non-positive `--time` falls back to 5 with a warning.
+
 ## Usage
 
 ```
@@ -32,16 +38,7 @@ If args is `-h`/`--help`/`help`, read `references/help.md` verbatim and stop.
 /session:schedule [--time M] /skill-name [args...]
 ```
 
-- `--time M` — delay in **minutes** (positive integer, default: **5**)
-- `<command>` — skill invocation or natural-language task to run after the delay
-
-## Examples
-
-```
-/session:schedule --time 10 "/gh-pr:reply 350"      # /gh-pr:reply in 10 min
-/session:schedule /gh-resolve:conflict 351          # run in 5 min (default)
-/session:schedule --time 3 "PR #200 리뷰 코멘트 처리해"
-```
+Argument table and worked examples: `references/help.md`.
 
 ## Steps
 
@@ -58,13 +55,15 @@ If M is not a positive integer, default to 5 and warn the user.
 
 ### 2. Calculate Fire Time
 
-Run Bash to get the target cron fields in local time:
+Run Bash with the shared fire-time helper — `SKILL_DIR` is this file's directory,
+and `session:rate-limit-guard` owns the script (its docstring is the SSOT):
 
 ```bash
-python3 -c "from datetime import datetime, timedelta; print((datetime.now() + timedelta(minutes=M)).strftime('%M %H %d %m'))"
+python3 "${SKILL_DIR}/../rate-limit-guard/references/compute-fire-time.py" --in "$M"
 ```
 
-Replace `M` with the parsed minute value. Output: `<min> <hour> <dom> <month>`.
+Output: `<min> <hour> <dom> <month> <iso>`, local time. A non-zero exit means `M`
+was not positive — re-run with `--in 5` and warn.
 
 ### 3. Schedule with `CronCreate`
 
@@ -75,10 +74,19 @@ Call `CronCreate`:
 
 ### 4. Confirm to User
 
-Print one line after scheduling:
+Success (`<HH:MM>` from the helper's ISO field), then the failure shape:
 
 ```
-[SCHEDULED] [M]분 후에 실행됩니다: <command>  (job: <returned-id>)
+[OK] scheduled
+  when:    <M>분 후 (<HH:MM>)
+  command: <command>
+  job:     <returned-id>
+
+Next: 취소는 CronDelete(<returned-id>) — 예약 목록은 CronList
+```
+
+```
+[FAIL] cannot schedule — <reason, e.g. CronCreate unavailable on this harness>
 ```
 
 ## Related Skills
@@ -86,5 +94,5 @@ Print one line after scheduling:
 `session:rate-limit-guard` — the rate-limit specialization of this skill (reset-time
 cron + state file + cleanup) · built-in `/loop` — recurring interval runs, and
 its own description says "Do NOT invoke for one-off tasks"; this skill is the
-session-local one-shot deferral, used by `gh-flow:issue` for its in-flow delay
-steps.
+session-local one-shot deferral, called by `gh-verify:review-all` with
+`--defer-reply M` to postpone its `/gh-pr:reply` pass.
