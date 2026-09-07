@@ -80,6 +80,10 @@ re-invokes manually.
 
 ## Constraints
 
+- If `CronCreate` is unavailable or the Step 4 re-arm call fails, stop and
+  report — never substitute `sleep`, a background shell, an `at` job, or a
+  promise to act later; none of them wake an agent, so each reports success
+  while nothing is scheduled.
 - Never proceed past Step 3 on worktree mismatch — wrong dir = wrong work.
 - Never delete state or the next cron before the wrapped command succeeds.
 - Never invoke from inside another skill — cron- or user-triggered only.
