@@ -61,6 +61,18 @@ script's job.
    about the outer shell's cwd -- `ExitWorktree` moves this session, not the
    user's terminal.
 
+**Why this path stops before removing anything, and the script doesn't:**
+`ExitWorktree` bundles the branch delete into the same atomic `action:
+"remove"` call, so main has to be current *before* that call ever runs --
+there is no way to remove the worktree first and decide the branch's fate
+later, the way `lib/teardown.sh` does. The script's Steps 4-6 stay sequenced
+remove-then-sync-then-delete instead, deliberately, so a main-sync hiccup
+never blocks the worktree cleanup itself the user actually asked for (see
+`bash-commands.md`'s "Model judgment" section). Both paths still hand the
+conflict to the user to resolve by hand; only what happens to the
+worktree/branch while that's pending differs, and that difference is forced
+by the shape of the two tools, not an accidental inconsistency.
+
 ## When to fall back to `lib/teardown.sh`
 
 - Tearing down a worktree the session is not currently in (the normal case:
