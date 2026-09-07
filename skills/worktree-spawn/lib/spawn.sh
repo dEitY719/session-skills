@@ -24,8 +24,16 @@
 # Exit: 0 = worktree created, or --dry-run plan printed
 #       1 = precondition failure, unknown option, bad base ref, git failure
 #       2 = lock acquisition failed after MAX_RETRIES
+#
+# On a non-zero exit the caller (SKILL.md Step 3) turns this script's stderr
+# into the structured [FAIL] verdict. Every early-validation exit already
+# prints its own "Error: ..." line by hand; the ERR trap below is the
+# backstop for the later bare commands (git worktree add, the git-crypt
+# worktree config, the audit-log append) that have no such line of their
+# own and would otherwise exit via set -e with nothing but git's raw stderr.
 
 set -euo pipefail
+trap 'echo "Error: command failed (exit $?): ${BASH_COMMAND}" >&2' ERR
 
 usage() {
     cat <<'EOF'
