@@ -37,16 +37,28 @@ else
 fi
 
 # --- absolute mode: rolls to tomorrow when already past today ---
-past_hm=$(date -d '-1 hour' +'%H %M' 2>/dev/null || date -v-1H +'%H %M')
-out=$(python3 "$helper" $past_hm 0)
+# Anchor on *today's* current HH:MM with buffer -1 (one minute ago) rather
+# than "now - 1 hour": the latter can land on yesterday's clock time when run
+# near midnight, which stops being "past today" and breaks the assertion.
+now_hm=$(date +'%H %M')
+out=$(python3 "$helper" $now_hm -1)
 iso=$(awk '{print $5}' <<<"$out")
 today=$(date +%Y-%m-%d)
 fire_date=${iso%%T*}
 if [ "$fire_date" != "$today" ]; then
-    echo "ok    absolute mode: past HH:MM rolls to a future date"
+    echo "ok    absolute mode: already-passed HH:MM rolls to a future date"
 else
     echo "FAIL  absolute mode: past HH:MM did not roll forward (got $iso)"
     fail=1
 fi
+
+# --- validation: malformed args exit non-zero with a usage message ---
+for bad_args in "--in" "--in 0" "--in -5" "12 30"; do
+    # shellcheck disable=SC2086
+    out=$(python3 "$helper" $bad_args 2>&1)
+    rc=$?
+    check "rejects [$bad_args] (rc)" "2" "$rc"
+    case "$out" in usage:*|*$'\n'usage:*) ;; *) echo "FAIL  [$bad_args]: no usage line"; fail=1 ;; esac
+done
 
 exit "$fail"

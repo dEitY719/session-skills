@@ -32,15 +32,32 @@ def _fire_absolute(hour: int, minute: int, buffer_min: int) -> datetime:
 
 
 def _fire_relative(minutes: int) -> datetime:
+    if minutes <= 0:
+        raise ValueError(f"--in N requires a positive integer, got {minutes}")
     return datetime.now() + timedelta(minutes=minutes)
 
 
+USAGE = (
+    "usage: compute-fire-time.py HH MM B | compute-fire-time.py --in N\n"
+    "  HH MM B  absolute mode: three integers (hour, minute, buffer-minutes)\n"
+    "  --in N   relative mode: N a positive integer (minutes from now)"
+)
+
+
 def main(argv: list[str]) -> None:
-    if argv and argv[0] == "--in":
-        fire = _fire_relative(int(argv[1]))
-    else:
-        h, m, b = (int(x) for x in argv[:3])
-        fire = _fire_absolute(h, m, b)
+    try:
+        if argv and argv[0] == "--in":
+            if len(argv) < 2:
+                raise ValueError("--in requires a value")
+            fire = _fire_relative(int(argv[1]))
+        else:
+            if len(argv) < 3:
+                raise ValueError("absolute mode requires HH MM B")
+            h, m, b = (int(x) for x in argv[:3])
+            fire = _fire_absolute(h, m, b)
+    except ValueError as exc:
+        print(f"compute-fire-time.py: {exc}\n{USAGE}", file=sys.stderr)
+        sys.exit(2)
     print(fire.strftime("%M %H %d %m"), fire.isoformat())
 
 
