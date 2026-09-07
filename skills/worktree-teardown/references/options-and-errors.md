@@ -21,4 +21,4 @@ Run from the **main repo** (not from inside a worktree). See
 | Worktree remove fails | Try `--force` if opted in, else stop |
 | Branch not fully merged | Warn, skip branch delete (unless `--force`) |
 | Main branch not found | Try `master`, then error |
-| Pull conflict | Script finishes teardown, flags it in the report; hand off to `gh-resolve:conflict` |
+| Pull conflict | Script finishes teardown, flags it in the report; resolve by hand |

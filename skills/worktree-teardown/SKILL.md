@@ -60,12 +60,16 @@ the worktree and does not sync main first. Read `references/native-tools.md`
 and follow it when the session is already in the worktree it is done with.
 Every other harness (Codex, Gemini, Kimi, opencode) uses the script above.
 
-## Step 3: Hand off a pull conflict
+## Step 3: A pull conflict is not this skill's job
 
-If the sync conflicts, the script prints `Conflict detected during pull.` and
-the conflicting file list, then still finishes the branch delete and the
-report below. Do not resolve it yourself: point the user at
-`gh-resolve:conflict` (see `references/bash-commands.md` for why).
+If the sync conflicts, the script still exits 0 and prints `[OK] Teardown
+complete` below — the worktree and branch are already torn down cleanly, and
+that is this skill's own success criterion. Only the `Now on:` line degrades,
+to `pull failed -- resolve before continuing`, printed above the conflicting
+file list. Do not resolve the conflict yourself: this is a plain local merge
+conflict on `main`, not a PR branch (`gh-resolve:conflict` does not apply
+here), so pass the file list through and tell the user to resolve it by hand
+— see `references/bash-commands.md` for why.
 
 ## Step 4: Report
 

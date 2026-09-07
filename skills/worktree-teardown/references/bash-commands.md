@@ -68,11 +68,15 @@ from inside the script.
 
 ## Model judgment -- what the script cannot do
 
-- **Hand off a pull conflict.** On a failed `git pull` the script prints
-  `Conflict detected during pull.` and the `--diff-filter=U` file list, sets
-  `Now on: <main> (pull failed ...)`, and continues to the safe branch delete.
-  Point the user at `gh-resolve:conflict` -- resolving it here would need more
-  reasoning than this skill's declared `haiku` tier budgets for.
+- **Report a pull conflict, don't resolve it.** On a failed `git pull` the
+  script still exits 0: it prints `Conflict detected during pull.` and the
+  `--diff-filter=U` file list, sets `Now on: <main> (pull failed ...)`, and
+  continues to the safe branch delete -- the teardown itself still succeeded.
+  This is a local merge conflict on `main`, not a PR branch, so
+  `gh-resolve:conflict` (PR-branch rebase only) does not apply: report the
+  conflicted files and tell the user to resolve them by hand (`git status`,
+  `git mergetool`, or manual edits + `git commit`) -- resolving it here would
+  need more reasoning than this skill's declared `haiku` tier budgets for.
 - **Decide `--force`.** It is the user's word, relayed. A pre-flight block is
   reported and the run stops; it is not re-run with `--force` on your judgment.
 - **Pick the worktree.** The path is an argument; the script only verifies it.
