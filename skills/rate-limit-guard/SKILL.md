@@ -70,10 +70,11 @@ place** — that is exactly when the safety net should fire.
 
 ## Constraints
 
-- If `CronCreate` is unavailable or the Step 3 call fails, stop and report —
-  never substitute `sleep`, a background shell, an `at` job, or a promise to
-  act later; none of them wake an agent, so each reports success while
-  nothing is scheduled.
+- If `CronCreate` is unavailable or the Step 3 call fails, stop and report
+  `[FAIL] CronCreate 사용 불가 — 안전망 미설정, 명령 미실행.` — never substitute
+  `sleep`, a background shell, an `at` job, or a promise to act later; none of
+  them can open a fresh agent turn, so each reports success without actually
+  resuming the agent.
 - Never schedule without explicit `--reset HH:MM`.
 - Never use `recurring: true` or `durable: false`.
 - Never auto-cleanup on transient errors.
