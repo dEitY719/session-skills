@@ -49,5 +49,5 @@ safety net (state file + cleanup) is `session:rate-limit-guard`.
 
 ## Cancelling
 
-The success line reports a job id. `CronDelete(<id>)` cancels the pending run;
+The success block reports a job id. `CronDelete(<id>)` cancels the pending run;
 `CronList` shows what is still queued.

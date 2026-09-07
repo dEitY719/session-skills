@@ -4,7 +4,7 @@ description: >-
   [Claude Code Only] 슬래시 명령/작업을 N분 뒤 실행되도록 예약(기본 5분). `CronCreate` 도구 필요 —
   Codex / Gemini CLI 에서는 동작하지 않는다. Use for /session:schedule, "N분 후에 /skill
   실행해", "schedule /skill in N minutes". 세션 로컬 지연 전용 — 반복 주기 실행은 내장 /loop 스킬.
-allowed-tools: [CronCreate]
+allowed-tools: Bash, CronCreate
 license: MIT
 metadata:
   model_recommendation:
@@ -25,11 +25,11 @@ If args is `-h`/`--help`/`help`, read `references/help.md` verbatim and stop.
 > session-spawn scheduler, so this skill cannot run there.
 > See [issue #362](https://github.com/dEitY719/dotfiles/issues/362).
 
-**Stop-on-error policy** — HARD-stop when `CronCreate` is unavailable or its call
-fails: print the Step 4 `[FAIL]` line and stop. Never emulate the delay with
-`sleep`, a background shell, an `at` job, or a promise to act later — none of
-those can wake an agent, so each reports success while nothing is scheduled.
-Soft-fail: a non-positive `--time` falls back to 5 with a warning.
+**Stop-on-error policy** — if `CronCreate` is unavailable or its call fails,
+print the Step 4 `[FAIL]` line and stop. Never substitute `sleep`, a background
+shell, an `at` job, or a promise to act later — none of them wake an agent, so
+each reports success while nothing is scheduled. Soft-fail: a non-positive
+`--time` falls back to 5 with a warning.
 
 ## Usage
 
@@ -55,15 +55,15 @@ If M is not a positive integer, default to 5 and warn the user.
 
 ### 2. Calculate Fire Time
 
-Run Bash with the shared fire-time helper — `SKILL_DIR` is this file's directory,
-and `session:rate-limit-guard` owns the script (its docstring is the SSOT):
+Run Bash with the shared fire-time helper (`SKILL_DIR` = this file's directory;
+`session:rate-limit-guard` owns the script — its docstring is the SSOT):
 
 ```bash
 python3 "${SKILL_DIR}/../rate-limit-guard/references/compute-fire-time.py" --in "$M"
 ```
 
-Output: `<min> <hour> <dom> <month> <iso>`, local time. A non-zero exit means `M`
-was not positive — re-run with `--in 5` and warn.
+Output: `<min> <hour> <dom> <month> <iso>`, local time. Step 1 already guarantees
+`M` is positive; on a non-zero exit anyway, fall back to `--in 5` and warn.
 
 ### 3. Schedule with `CronCreate`
 
@@ -74,7 +74,7 @@ Call `CronCreate`:
 
 ### 4. Confirm to User
 
-Success (`<HH:MM>` from the helper's ISO field), then the failure shape:
+Success, then failure (`<HH:MM>` comes from the helper's ISO field):
 
 ```
 [OK] scheduled
@@ -91,8 +91,8 @@ Next: 취소는 CronDelete(<returned-id>) — 예약 목록은 CronList
 
 ## Related Skills
 
-`session:rate-limit-guard` — the rate-limit specialization of this skill (reset-time
-cron + state file + cleanup) · built-in `/loop` — recurring interval runs, and
-its own description says "Do NOT invoke for one-off tasks"; this skill is the
-session-local one-shot deferral, called by `gh-verify:review-all` with
-`--defer-reply M` to postpone its `/gh-pr:reply` pass.
+`session:rate-limit-guard` is the rate-limit specialization of this skill
+(reset-time cron + state file + cleanup). Built-in `/loop` covers recurring
+interval runs — its own description says "Do NOT invoke for one-off tasks".
+This skill is the session-local one-shot deferral, called by
+`gh-verify:review-all` with `--defer-reply M` to postpone its `/gh-pr:reply` pass.
