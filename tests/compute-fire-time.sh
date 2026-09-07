@@ -27,9 +27,7 @@ out=$(python3 "$helper" --in 10)
 check "relative mode: 5 space-separated fields" "5" "$(wc -w <<<"$out")"
 
 iso=$(awk '{print $5}' <<<"$out")
-now_epoch=$(date +%s)
-fire_epoch=$(date -d "$iso" +%s 2>/dev/null || python3 -c "from datetime import datetime; print(int(datetime.fromisoformat('$iso').timestamp()))")
-diff=$((fire_epoch - now_epoch))
+diff=$(python3 -c "from datetime import datetime; print(int((datetime.fromisoformat('$iso') - datetime.now()).total_seconds()))")
 # allow a few seconds of test-run slop around the expected 600s (10 min)
 if [ "$diff" -ge 590 ] && [ "$diff" -le 650 ]; then
     echo "ok    relative mode: fires ~10 minutes out (${diff}s)"
