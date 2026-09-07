@@ -32,6 +32,12 @@ Stop on any non-zero exit and surface stderr. Never retry a failed spawn
 without reading the error first -- exit 2 in particular means a concurrent
 spawn, not a transient glitch.
 
+Any non-zero exit is what SKILL.md's report step turns into the `[FAIL]`
+verdict: the `Error:` line is the reason, the numbered step below where it
+failed (validate, detect agent, acquire lock, scan index, resolve base ref,
+`git worktree add`, log, report) is the `Step`, and the exit code is the
+`Detail`.
+
 ## Output
 
 On success, exactly this block on stdout (git's own `Preparing worktree` chatter
