@@ -1,10 +1,10 @@
 ---
 name: worktree-spawn
 description: >-
-  Create an isolated git worktree so this AI agent works in parallel without
-  colliding with other agents in the repo. Use for /session:worktree-spawn,
-  "새로운 작업 시작", "격리된 작업 공간 만들어줘", "spawn a worktree", "start isolated work".
-  Cleanup is session:worktree-teardown.
+  Create an isolated git worktree so this AI agent works in parallel with
+  others in the repo. Use for /session:worktree-spawn, "새로운 작업 시작",
+  "격리된 작업 공간 만들어줘", "spawn a worktree", "start isolated work". Cleanup is
+  session:worktree-teardown.
 license: MIT
 allowed-tools: Bash, Read, Grep, Glob, EnterWorktree
 metadata:
@@ -83,3 +83,12 @@ git-crypt files can show as `M` from a raw-byte vs. textconv mismatch.
 
 The script cannot change the caller's cwd. Relay the `cd` command it prints as
 guidance, then execute it yourself as the AI agent.
+
+On a non-zero exit, emit a structured failure verdict instead, filled in from
+the script's `Error:` line and exit code:
+
+```
+[FAIL] <reason>
+  Step:    <step name where failure occurred>
+  Detail:  <error message or exit code>
+```
