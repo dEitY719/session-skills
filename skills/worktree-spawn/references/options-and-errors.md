@@ -1,16 +1,8 @@
 # Options and Error Handling -- CLI reference
 
-## Options
-
-| Option | Description | Default |
-|---|---|---|
-| `--ai <name>` | Override agent name | auto-detect |
-| `--task "slug"` | Add task slug to branch name (English only) | none |
-| `--base <ref>` | Base branch/commit | `origin/main` |
-| `--dry-run` | Print plan without creating anything | `false` |
-
-When `--dry-run` is specified, print the full plan (agent, path, branch, base,
-command) and stop without creating anything.
+`references/help.md` is the single user-facing options table (it is what
+`-h`/`--help`/`help` prints verbatim). This file covers only what help.md
+doesn't: error handling and the git-crypt sequence.
 
 There is no `--list` option. Run `git worktree list` in the main repo to see
 the worktrees that already exist.
