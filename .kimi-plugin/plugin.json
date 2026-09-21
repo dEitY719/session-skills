@@ -1,6 +1,6 @@
 {
   "name": "session",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Resume an interrupted turn, audit or hand off a session, arm a rate-limit safety net, defer a command, and spawn or tear down isolated git worktrees.",
   "author": {
     "name": "dEitY719",
