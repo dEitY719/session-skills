@@ -5,6 +5,8 @@ description: >-
   전혀 바꾸지 않고, 그린이면 `/exit` 안내만 한다(대신 실행하지 않는다). Use for /session:close, "세션
   닫아도 되나", "audit this session before I close it". 인계는 session:handoff.
 allowed-tools: Bash, Read, Grep, TaskList
+compatibility:
+  network: optional
 license: MIT
 metadata:
   model_recommendation:
@@ -18,8 +20,7 @@ metadata:
 
 ## Help
 
-If arg #1 is `-h`/`--help`/`help`, output `references/help.md` verbatim and
-stop. No other tool calls.
+If arg #1 is `-h`/`--help`/`help`, output `references/help.md` verbatim and stop. No other tool calls.
 
 ## Step 1: Args (F-1)
 
@@ -64,8 +65,7 @@ NF-4 강등(사내PC + github.com 원격 → 원격 미반영 커밋은 NOTE)은
 bash "${SKILL_DIR}/lib/check-artifacts.sh" --scratchpad <this session's scratchpad> <repo>...
 ```
 
-scratchpad 경로는 세션이 시스템 프롬프트로 받은 값을 그대로 넘긴다. 없으면
-`--scratchpad` 를 생략한다. 결과는 전부 NOTE 다.
+scratchpad 경로는 세션이 시스템 프롬프트로 받은 값을 그대로 넘긴다. 없으면 `--scratchpad` 를 생략한다. 결과는 전부 NOTE 다.
 
 ## Step 6: C-4 산출물 후속 (F-6)
 
