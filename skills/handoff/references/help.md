@@ -20,7 +20,7 @@ planned interruption, or a context window near its limit), this skill writes the
 handoff so the next session can resume without re-explaining:
 
 1. Resolves the tracking issue (arg → conversation → branch → gh activity;
-   creates one via gh-issue:create when the work deserves it, or falls back
+   creates one via gh-issue:issue-create when the work deserves it, or falls back
    to memory-only when it doesn't).
 2. Composes a structured handoff comment — verified done / remaining work /
    resume environment / open decisions — and posts it on the issue.
@@ -37,7 +37,7 @@ handoff so the next session can resume without re-explaining:
 
 Do NOT invoke for:
 
-- Recording a finished one-off task — that's gh-issue:create or
+- Recording a finished one-off task — that's gh-issue:issue-create or
   gh-issue:discussion-create.
 - Resuming after an API error or ESC in the SAME session — that's
   session:restart.

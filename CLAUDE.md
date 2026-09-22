@@ -105,7 +105,7 @@ should apply here on the next run, which is the whole point.
   (`/devx-restart`, `/ai-worktree-spawn`) were dropped in the migration — do not
   reintroduce them, in descriptions or anywhere else.
 - **Cross-repo references use the owning repo's current namespace.**
-  `gh-issue:create`, `gh-issue:read`, `gh-flow:issue`, `gh-pr:reply`,
+  `gh-issue:issue-create`, `gh-issue:read`, `gh-flow:issue`, `gh-pr:reply`,
   `notes:task-history`, `pkm:obsidian-session-clip` and the `superpowers:*`
   process skills live in other repos of this family. Never rewrite them to
   `session:` — only siblings inside `skills/` take that prefix — and never
