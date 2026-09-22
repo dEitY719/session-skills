@@ -1,6 +1,6 @@
 {
   "name": "session",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Session lifecycle and workspace skills: resume an interrupted turn, audit or hand off a session, arm a rate-limit safety net, defer a command, and spawn or tear down an isolated git worktree.",
   "author": {
     "name": "dEitY719",
