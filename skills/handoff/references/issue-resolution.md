@@ -32,7 +32,7 @@ No issue found anywhere. Decide by the nature of the session's work:
 
 - **Substantive multi-session work** (an implementation mid-way, a design
   with open decisions, anything the next session must continue): create a
-  new tracking issue via `Skill(gh-issue:create)` and use its number. The
+  new tracking issue via `Skill(gh-issue:issue-create)` and use its number. The
   handoff comment then becomes that issue's first status record.
 - **Trivial or nearly-done work** (small fix awaiting review, exploration
   with no follow-up): degrade to `--memory-only` and say so in the report.
@@ -66,5 +66,5 @@ caller.
 - GitHub unreachable AND no `--memory-only`: HARD-stop and ask — posting is
   the skill's core outward action; silently degrading it hides the failure.
 - GitHub unreachable WITH `--memory-only`: proceed; nothing needed the API.
-- `gh-issue:create` sub-skill fails: warn, degrade to memory-only, report
+- `gh-issue:issue-create` sub-skill fails: warn, degrade to memory-only, report
   `posted=none (fallback)`.
