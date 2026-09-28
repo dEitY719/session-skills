@@ -31,15 +31,15 @@ Save the returned ID as `<NEXT_ID>`.
 
 ### Cron prompt template
 
-Use the template at
-`../../rate-limit-guard/references/cron-prompt-template.md` (SSOT) — the
-same one cycle 1 is registered with. Both skills ship in the `session`
-plugin, so the path always resolves.
+Use the template in `session:rate-limit-guard`'s
+`references/cron-prompt-template.md` (SSOT) — the same one cycle 1 is
+registered with. It is a shared contract, so it is referenced by name
+rather than copied here.
 
 ## Update state file
 
 Overwrite `.claude/.rate-limit-guard.json` using the schema defined in
-`../../rate-limit-guard/references/state-and-confirm.md` (SSOT).
+`session:rate-limit-guard`'s `references/state-and-confirm.md` (SSOT).
 Set `cron_id = <NEXT_ID>`, `scheduled_for = <new ISO>`, decrement
 `cycles_remaining` by 1; preserve `command`, `worktree`, `branch`,
 `max_cycles`, `cycle_window_min` from the loaded state.
