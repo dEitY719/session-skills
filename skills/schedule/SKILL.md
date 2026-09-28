@@ -55,11 +55,11 @@ If M is not a positive integer, default to 5 and warn the user.
 
 ### 2. Calculate Fire Time
 
-Run Bash with the shared fire-time helper (`SKILL_DIR` = this file's directory;
-`session:rate-limit-guard` owns the script — its docstring is the SSOT):
+Run Bash with the vendored fire-time helper (`SKILL_DIR` = this file's directory;
+byte-identical copy of `session:rate-limit-guard`'s SSOT, drift-guarded in `tests/`):
 
 ```bash
-python3 "${SKILL_DIR}/../rate-limit-guard/references/compute-fire-time.py" --in "$M"
+python3 "${SKILL_DIR}/references/compute-fire-time.py" --in "$M"
 ```
 
 Output: `<min> <hour> <dom> <month> <iso>`, local time. Step 1 already guarantees

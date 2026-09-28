@@ -9,12 +9,12 @@ safety net even if the wrapped command rate-limits or crashes mid-run.
 `SKILL_DIR` per SKILL.md Step 4 (the `resume-after-limit/` directory).
 
 ```bash
-python3 "${SKILL_DIR}/../rate-limit-guard/references/compute-fire-time.py" --in "$cycle_window_min"
+python3 "${SKILL_DIR}/references/compute-fire-time.py" --in "$cycle_window_min"
 ```
 
-Same helper `rate-limit-guard`'s Step 2 uses for its absolute anchor, called
-here in relative mode (SSOT — see `compute-fire-time.py`'s own docstring for
-both modes). Output: `<min> <hour> <dom> <month> <iso>` — first four = cron
+Vendored byte-identical copy of the helper `rate-limit-guard`'s Step 2 uses for
+its absolute anchor (SSOT stays there; `tests/vendored-fire-time.sh` fails on
+drift), called here in relative mode — see its docstring for both modes. Output: `<min> <hour> <dom> <month> <iso>` — first four = cron
 expression (no DoW), `<iso>` = state-file timestamp.
 
 ## CronCreate parameters
