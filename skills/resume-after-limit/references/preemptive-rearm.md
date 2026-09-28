@@ -14,8 +14,9 @@ python3 "${SKILL_DIR}/references/compute-fire-time.py" --in "$cycle_window_min"
 
 Vendored byte-identical copy of the helper `rate-limit-guard`'s Step 2 uses for
 its absolute anchor (SSOT stays there; `tests/vendored-fire-time.sh` fails on
-drift), called here in relative mode — see its docstring for both modes. Output: `<min> <hour> <dom> <month> <iso>` — first four = cron
-expression (no DoW), `<iso>` = state-file timestamp.
+drift), called here in relative mode — see its docstring for both modes.
+Output: `<min> <hour> <dom> <month> <iso>` — first four = cron expression
+(no DoW), `<iso>` = state-file timestamp.
 
 ## CronCreate parameters
 
