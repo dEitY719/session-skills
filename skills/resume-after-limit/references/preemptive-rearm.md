@@ -6,10 +6,10 @@ safety net even if the wrapped command rate-limits or crashes mid-run.
 
 ## Compute fire time
 
-`SKILL_DIR` per SKILL.md Step 4 (the `resume-after-limit/` directory).
+`SKILL_DIR` per SKILL.md Step 1 (the `resume-after-limit/` directory).
 
 ```bash
-python3 "${SKILL_DIR}/references/compute-fire-time.py" --in "$cycle_window_min"
+python3 "${SKILL_DIR}/references/compute-fire-time.py" --in "$CYCLE_WINDOW_MIN"
 ```
 
 Vendored byte-identical copy of the helper `rate-limit-guard`'s Step 2 uses for
