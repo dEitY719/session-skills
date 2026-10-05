@@ -33,11 +33,15 @@ If arg #1 is `-h`/`--help`/`help`, print `references/help.md` verbatim and stop.
 
 ### 1. Load State
 
+`SKILL_DIR` = this file's directory.
+
 ```bash
-test -f .claude/.rate-limit-guard.json && cat .claude/.rate-limit-guard.json
+STATE=$(python3 "$SKILL_DIR/lib/load-state.py") || exit 1; eval "$STATE"
 ```
 
-Parse `command`, `worktree`, `branch`, `max_cycles`, `cycles_remaining`, `cycle_window_min` (jq/Python). Missing multi-cycle fields default to `max_cycles=1`, `cycles_remaining=1`, `cycle_window_min=305` (single-cycle behavior).
+Sets `COMMAND`, `WORKTREE`, `BRANCH`, `MAX_CYCLES`, `CYCLES_REMAINING`,
+`CYCLE_WINDOW_MIN` (missing multi-cycle fields default to `1`/`1`/`305`); no
+state file sets nothing. Surface its `[FAIL]` line verbatim and stop.
 
 ### 2. Resolve the Command
 
@@ -47,16 +51,13 @@ State file's `command` → `<command>` arg → stop with
 ### 3. Sanity Check Context
 
 ```bash
-PWD_NOW=$(pwd); BRANCH=$(git branch --show-current 2>/dev/null || echo unknown)
+python3 "$SKILL_DIR/lib/load-state.py" --check-context || exit 1
 ```
 
-- If `PWD_NOW != worktree`: STOP —
-  `[FAIL] 워크트리 불일치 — 예상: <worktree>, 현재: <PWD_NOW>.`
-- If `BRANCH != branch`: warn `[WARN] 브랜치 이동` and continue.
+Worktree mismatch prints `[FAIL] 워크트리 불일치 — 예상: <worktree>, 현재: <PWD_NOW>.`
+and exits 1: STOP. Branch mismatch prints `[WARN] 브랜치 이동`: continue.
 
 ### 4. Pre-emptive Re-arm
-
-`SKILL_DIR` = this file's directory.
 
 If `cycles_remaining > 1`, register the next cycle's cron **before** running
 the wrapped command per `references/preemptive-rearm.md` (fire-time arithmetic,
