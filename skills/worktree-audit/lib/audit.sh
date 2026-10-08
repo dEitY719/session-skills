@@ -53,9 +53,8 @@ if [ -n "$base" ]; then
     base_epoch=$(git log -1 --format=%ct "$base")
     range=$(git log --format='%ct %ad' --date=iso "$base..HEAD")
     if [ -n "$range" ]; then
-        last=$(printf '%s\n' "$range" | head -n1 | cut -d' ' -f2-)
-        last_epoch=$(printf '%s\n' "$range" | head -n1 | cut -d' ' -f1)
-        first=$(printf '%s\n' "$range" | tail -n1 | cut -d' ' -f2-)
+        read -r last_epoch last <<<"$range"
+        first=${range##*$'\n'} first=${first#* }
     fi
 fi
 [ "$last_epoch" -gt 0 ] || last_epoch=$base_epoch
@@ -64,17 +63,19 @@ fi
 # git refuses `check-ignore <link>/` ("beyond a symbolic link"), so a dir-only
 # pattern such as `.venv/` is probed against a scratch work tree holding only
 # copies of the checkout's .gitignore files. The scratch dir is ours; the
-# checkout is never written.
+# checkout is never written. Built once, on the first symlink that needs it.
+mirror=""
 probe_dir_pattern() { # <path> -> prints the matching rule, or nothing
-    local mirror g
-    mirror=$(mktemp -d) || return 0
-    git ls-files -z -co --exclude-standard -- ':(glob)**/.gitignore' |
-        while IFS= read -r -d '' g; do
-            mkdir -p "$mirror/$(dirname "$g")" && cp "$g" "$mirror/$g"
-        done
+    local g
+    if [ -z "$mirror" ]; then
+        mirror=$(mktemp -d) || return 0
+        git ls-files -z -co --exclude-standard -- ':(glob)**/.gitignore' |
+            while IFS= read -r -d '' g; do
+                mkdir -p "$mirror/$(dirname "$g")" && cp "$g" "$mirror/$g"
+            done
+    fi
     git -C "$mirror" --git-dir="$gitdir" --work-tree="$mirror" \
         check-ignore -v --no-index -- "$1/" 2>/dev/null | cut -f1
-    rm -rf "$mirror"
 }
 
 docs=()
@@ -84,9 +85,6 @@ done
 
 # --- artifacts -------------------------------------------------------------
 count=0
-records=$(mktemp) || exit 1
-git status --porcelain=v1 -z --untracked-files=normal >"$records"
-exec 3<"$records"
 while IFS= read -r -d '' rec <&3; do
     xy=${rec:0:2} p=${rec:3}
     case "$xy" in R* | C*) IFS= read -r -d '' _ <&3 ;; esac # skip rename source
@@ -94,13 +92,14 @@ while IFS= read -r -d '' rec <&3; do
     count=$((count + 1))
     hints=()
 
+    target=- texists=- tsize=-
     if [ -L "$p" ]; then
         type=symlink
         target=$(readlink "$p")
-        if [ -e "$p" ]; then texists=yes; tsize=$(size_of -L "$p"); else texists=no; tsize=-; fi
-    elif [ -d "$p" ]; then type=dir; target=-; texists=-; tsize=-
-    elif [ -e "$p" ]; then type="file"; target=-; texists=-; tsize=-
-    else type=missing; target=-; texists=-; tsize=-
+        if [ -e "$p" ]; then texists=yes; tsize=$(size_of -L "$p"); else texists=no; fi
+    elif [ -d "$p" ]; then type=dir
+    elif [ -e "$p" ]; then type="file"  # quoted: SC2209
+    else type=missing
     fi
     size=-
     [ "$type" = missing ] || size=$(size_of "$p")
@@ -168,9 +167,8 @@ while IFS= read -r -d '' rec <&3; do
         printf 'HINT:'; field path "$p"; field suggest "${h%%|*}"; field reason "${h#*|}"
         printf '\n'
     done
-done
-exec 3<&-
-rm -f "$records"
+done 3< <(git status --porcelain=v1 -z --untracked-files=normal)
+[ -z "$mirror" ] || rm -rf "$mirror"
 
 printf 'STATUS:'
 field checkout "$top"; field branch "$branch"; field base "${base_ref:-none}"
