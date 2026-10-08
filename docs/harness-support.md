@@ -1,14 +1,14 @@
 # session — harness support
 
-Per-skill portability for the eight `session` skills, what each degraded cell
+Per-skill portability for the nine `session` skills, what each degraded cell
 means in practice, and the two smaller gaps that apply everywhere outside
 Claude Code. Summarised in [`README.md`](../README.md) under "Harness support".
 
 This repo is more harness-coupled than most of its siblings, and the matrix says
-so. Three of the eight skills exist only because Claude Code can schedule a
+so. Three of the nine skills exist only because Claude Code can schedule a
 future agent turn; no other harness can, so those three do not run anywhere else
 at all. Three more read the session TodoList, which most harnesses expose only
-as a write-only tool, so they degrade. Only the two worktree skills are pure
+as a write-only tool, so they degrade. Only the three worktree skills are pure
 `git` and behave identically everywhere.
 
 | Skill | Claude Code | Codex | Kimi | Gemini / Antigravity | Hermes | OpenCode |
@@ -20,6 +20,7 @@ as a write-only tool, so they degrade. Only the two worktree skills are pure
 | `resume-after-limit` | full | unavailable | unavailable | unavailable | unavailable | unavailable |
 | `schedule` | full | unavailable | unavailable | unavailable | unavailable | unavailable |
 | `worktree-spawn` | full | full | full | full | full | full |
+| `worktree-audit` | full | full | full | full | full | full |
 | `worktree-teardown` | full | full, confirm in chat | full | full | full, confirm in chat | full, confirm in chat |
 
 *unavailable* — the skill declares `CronCreate` / `CronDelete`, tools that start

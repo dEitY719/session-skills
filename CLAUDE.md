@@ -7,7 +7,7 @@ text. Edit `CLAUDE.md`; never replace the symlink with a second copy.
 ## What this repo is
 
 A single-plugin skill marketplace. The plugin is named `session` and it bundles
-eight skills grouped by **when they fire** rather than by what they touch — the
+nine skills grouped by **when they fire** rather than by what they touch — the
 moments a session stalls, ends, or needs a workspace of its own:
 
 | Skill | Fires when | Role |
@@ -19,6 +19,7 @@ moments a session stalls, ends, or needs a workspace of its own:
 | `resume-after-limit` | The reset arrives | What that cron invokes: reads the state file, verifies the worktree, pre-arms the next cycle, re-runs the wrapped command. |
 | `schedule` | Something should happen in N minutes | Generic session-local one-shot deferral of any slash command or task. |
 | `worktree-spawn` | Parallel work starts | Creates `../<project>-<agent>-<N>` on `wt/<agent>/<N>`, handling agent detection, index collision, base-ref resolution, and `git-crypt`. |
+| `worktree-audit` | Leftovers block a worktree removal | Identifies each untracked/modified entry, judges commit / gitignore gap / discard / preserve, disposes of the safe ones, chains to `worktree-teardown`. |
 | `worktree-teardown` | Parallel work ends | Removes the worktree, syncs main, deletes the branch. The destructive one. |
 
 Two of these are pairs, and the pairing is load-bearing:
@@ -126,7 +127,7 @@ should apply here on the next run, which is the whole point.
   Step 1 out into `references/resume-target.md`.
 - **Description budget.** CI sums every skill description and fails past 5,440
   characters — Codex's context budget — and rejects any single description over
-  1,024. The eight here total roughly 1,850, so there is room; spend it on
+  1,024. The nine here total roughly 2,100, so there is room; spend it on
   trigger phrases, not prose.
 - **`lib/*.sh` is the contract, not a suggestion.** `check-repos.sh`,
   `check-artifacts.sh`, and `_repo_common.sh` hold the deterministic half of
@@ -160,6 +161,14 @@ These are acceptance criteria carried over from dotfiles, not advice:
   `--force` is the user's explicit override, never the agent's shortcut past a
   block. Sync main *before* deleting the branch so `git branch -d` can verify
   merge status.
+- **`session:worktree-audit` collects evidence, the model judges.**
+  `lib/audit.sh` never deletes or edits anything; it prints `HINT:` lines, not
+  verdicts. The skill removes a symlink only with `rm <link>` after confirming
+  the target survives (never `-r` or a trailing slash), never edits
+  `.gitignore` or other repo files (it proposes a follow-up issue), never
+  commits (a "commit" verdict hands off to `gh-pr:commit` / `session:handoff`),
+  and never runs `git worktree remove` — removal goes through
+  `session:worktree-teardown`, with `--force` only on the user's word.
 - **`session:worktree-spawn` refuses to run from inside a worktree**, and in a
   `git-crypt` repo it stages with explicit `git add <path>` — never `-A` or
   `.` — because auto-unlocked files can show as modified from a raw-byte versus
@@ -178,7 +187,7 @@ These are acceptance criteria carried over from dotfiles, not advice:
 
 ## Harness gaps are documented, not worked around silently
 
-Three of these eight skills cannot run outside Claude Code, and pretending
+Three of these nine skills cannot run outside Claude Code, and pretending
 otherwise is the failure mode to guard against:
 
 - **`rate-limit-guard`, `resume-after-limit`, and `schedule` need `CronCreate` /
@@ -195,7 +204,7 @@ otherwise is the failure mode to guard against:
   the chunking and delegation rules unchanged. `close` (C-2) and `handoff`
   degrade the same way and must say so in their output rather than skipping the
   check silently.
-- **`close`, `handoff`, `worktree-spawn`, and `worktree-teardown` are otherwise
+- **`close`, `handoff`, `worktree-spawn`, `worktree-audit`, and `worktree-teardown` are otherwise
   shell, `git`, `gh`, and file writes** — they port cleanly.
 
 When you add a step that depends on a Claude-Code-only capability, say so in

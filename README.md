@@ -1,9 +1,9 @@
 # session-skills
 
-Eight skills for the boundaries of a coding session — resume a turn that died,
+Nine skills for the boundaries of a coding session — resume a turn that died,
 audit or hand off a session that is ending, carry an unattended run across a
-token-limit reset, defer a command by N minutes, and create or remove the
-isolated git worktree the work happens in. Packaged as a single plugin named
+token-limit reset, defer a command by N minutes, and create, audit the
+leftovers of, or remove the isolated git worktree the work happens in. Packaged as a single plugin named
 `session`, installable on six coding-agent harnesses.
 
 They are grouped by *when* they fire rather than by what they touch. That is the
@@ -26,6 +26,7 @@ this repo owns no shared assets — it links out for the
 | `resume-after-limit` | `/session:resume-after-limit [<command>]` | **[Claude Code only]** What that cron invokes. Reads the state file, stops hard on a worktree mismatch, pre-arms the next cycle, re-runs the wrapped command, cleans up on success. |
 | `schedule` | `/session:schedule [--time M] "<command>"` | **[Claude Code only]** Generic session-local deferral: run any slash command or task in M minutes (default 5). One-shot; the built-in `/loop` is for recurring interval runs. |
 | `worktree-spawn` | `/session:worktree-spawn [--ai <name>] [--task <slug>] [--base <ref>] [<branch>]` | Creates `../<project>-<agent>-<N>` on a `wt/<agent>/<N>` branch so parallel agents do not collide. Detects the agent, picks the next free index, resolves the base ref, and handles `git-crypt` repos. |
+| `worktree-audit` | `/session:worktree-audit [<checkout-path>]` | Explains every untracked or modified leftover that blocks a worktree removal — who made it, when, and why — and judges it commit / gitignore gap / discard / preserve. Removes only the safe cases (a symlink via `rm <link>` once its target is confirmed), never edits `.gitignore` or commits, then chains to `worktree-teardown`. |
 | `worktree-teardown` | `/session:worktree-teardown <worktree-path> [--force] [--keep-branch] [--dry-run]` | Removes the worktree, syncs main, deletes the branch. **The destructive one** — blocks on uncommitted or unpushed work unless you pass `--force`. |
 
 ### Visual guides and worked examples (GitHub Pages)
@@ -68,6 +69,7 @@ its `Next:` line points at `handoff`.
 | `resume-after-limit` | The same, plus `.claude/.rate-limit-guard.json` written by the guard — or an explicit `<command>` argument. |
 | `schedule` | Claude Code's `CronCreate` and `python3`. |
 | `worktree-spawn` | `git`, a writable parent directory, and the main repo as the working directory. Optional: a `git-crypt` key at `~/.config/git-crypt/<repo>.key` for auto-unlock. |
+| `worktree-audit` | `bash` and `git`; run it from the main repo or the worktree. |
 | `worktree-teardown` | `git`, run from the main repo with the worktree path as an argument. |
 
 ## Install
@@ -111,11 +113,11 @@ Antigravity (`agy`) shares `~/.gemini`, so it inherits the install.
 
 ## Harness support
 
-This repo is more harness-coupled than most of its siblings. Three of the eight
+This repo is more harness-coupled than most of its siblings. Three of the nine
 skills exist only because Claude Code can schedule a future agent turn, so they
 do not run anywhere else at all and refusing is the correct behaviour; three
 more read the session TodoList and degrade rather than fail without it; only the
-two worktree skills are pure `git` and behave identically everywhere. The
+three worktree skills are pure `git` and behave identically everywhere. The
 per-skill matrix, what each degraded cell means, and the two smaller gaps that
 apply outside Claude Code are in
 [`docs/harness-support.md`](docs/harness-support.md). Every gap and its
@@ -150,10 +152,11 @@ Manifests live at the repo root and all point at one flat `skills/` directory:
 .
 ├── skills/{restart,close,handoff,rate-limit-guard,
 │           resume-after-limit,schedule,
-│           worktree-spawn,worktree-teardown}/
+│           worktree-spawn,worktree-audit,
+│           worktree-teardown}/
 │   ├── SKILL.md
 │   ├── references/
-│   ├── lib/                                    (close only)
+│   ├── lib/                     (close, worktree-*, and others)
 │   └── evals/                                  (restart only)
 ├── .claude-plugin/{marketplace,plugin}.json    Claude Code
 ├── .codex-plugin/plugin.json                   Codex

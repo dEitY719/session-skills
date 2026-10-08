@@ -1,16 +1,16 @@
 """Hermes Agent registration for the `session` skills plugin.
 
-Registers the eight session-lifecycle skills with Hermes' native skill loader
+Registers the nine session-lifecycle skills with Hermes' native skill loader
 so `skill_view("session:<name>")` can load them on demand.
 
 Unlike superpowers, this plugin injects no session bootstrap context. These
 skills fire at the boundaries of a session, not inside every turn, and each one
 is explicitly invoked: you reach for `restart` when a turn died, for `close` or
 `handoff` when the session is ending, for `worktree-spawn` when starting
-isolated work. A bootstrap preamble would pay for all eight on the first turn
+isolated work. A bootstrap preamble would pay for all nine on the first turn
 and buy nothing.
 
-Three of the eight (`rate-limit-guard`, `resume-after-limit`, `schedule`) depend
+Three of the nine (`rate-limit-guard`, `resume-after-limit`, `schedule`) depend
 on Claude Code's `CronCreate` / `CronDelete` tools, which Hermes does not have.
 They are still registered so `skill_view` can explain the gap rather than
 returning "no such skill"; they must refuse to run here, not emulate a timer.

@@ -9,7 +9,7 @@
  * `worktree-spawn` when starting isolated work — so OpenCode's native `skill`
  * tool discovering them is all that is needed.
  *
- * Three of the eight (`rate-limit-guard`, `resume-after-limit`, `schedule`)
+ * Three of the nine (`rate-limit-guard`, `resume-after-limit`, `schedule`)
  * need Claude Code's CronCreate/CronDelete tools. OpenCode has no equivalent;
  * they are registered so the skill can explain the gap and stop, not so it can
  * fake a timer.
