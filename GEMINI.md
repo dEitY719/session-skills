@@ -1,10 +1,10 @@
 # session — skill index
 
-Eight skills for the boundaries of a coding session, grouped by *when* they
+Nine skills for the boundaries of a coding session, grouped by *when* they
 fire rather than by what they touch. Each lives in this extension's `skills/`
 directory. They are explicitly invoked, never ambient: load the one that
 matches the request by reading its `SKILL.md`, then follow it. Do not load all
-eight.
+nine.
 
 | Skill | Read | Use when |
 |-------|------|----------|
@@ -15,6 +15,7 @@ eight.
 | `resume-after-limit` | `@./skills/resume-after-limit/SKILL.md` | **Cannot run on Gemini CLI** — it is what `rate-limit-guard`'s cron invokes. |
 | `schedule` | `@./skills/schedule/SKILL.md` | **Cannot run on Gemini CLI** — needs `CronCreate`. |
 | `worktree-spawn` | `@./skills/worktree-spawn/SKILL.md` | Starting isolated work: create `../<project>-<agent>-<N>` on a `wt/<agent>/<N>` branch so parallel agents do not collide. |
+| `worktree-audit` | `@./skills/worktree-audit/SKILL.md` | Untracked or modified leftovers block a worktree removal: identify each, judge commit / gitignore gap / discard / preserve, dispose of the safe ones, then hand off to `worktree-teardown`. |
 | `worktree-teardown` | `@./skills/worktree-teardown/SKILL.md` | The work in a worktree is done: remove the worktree, sync main, delete the branch. Destructive — read the safety rules. |
 
 Each skill's `references/` directory holds the detail it loads on demand, and
@@ -46,8 +47,9 @@ up front, and do not reimplement `lib/` in prose.
   check the state of issues and PRs this session created.
 - **`rate-limit-guard`, `resume-after-limit`, `schedule`** need Claude Code's
   `CronCreate` / `CronDelete`. There is no Gemini equivalent.
-- **`worktree-spawn`, `worktree-teardown`** need only `git` and a writable
-  parent directory. `worktree-spawn` additionally handles `git-crypt` repos.
+- **`worktree-spawn`, `worktree-audit`, `worktree-teardown`** need only `git`
+  (plus `bash` for `worktree-audit`'s `lib/audit.sh`) and a writable parent
+  directory. `worktree-spawn` additionally handles `git-crypt` repos.
 
 ## Tool mapping for Gemini CLI
 
@@ -113,6 +115,12 @@ On Antigravity read `antigravity-tools.md` in that same directory instead —
   user's explicit override, not yours, and on Antigravity you must get that
   answer in the conversation. Sync main before deleting the branch so
   `git branch -d` can verify merge status.
+- **`worktree-audit` disposes of nothing it has not identified.** A symlink is
+  removed with `rm <link>` only after its target is confirmed to exist — never
+  `-r` or a trailing slash, which walks into the target. It never edits
+  `.gitignore` or other repo files (it proposes a follow-up issue), never
+  commits (a "commit" verdict is handed off), and never runs
+  `git worktree remove` itself — removal goes through `worktree-teardown`.
 - **`worktree-spawn` refuses to run from inside a worktree.** In a `git-crypt`
   repo it stages with explicit `git add <path>` — never `-A` or `.` — because
   auto-unlocked files can show as modified from a raw-byte versus textconv

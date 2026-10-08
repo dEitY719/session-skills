@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - [OpenCode.ai](https://opencode.ai) installed
-- `git` (every skill here uses it; the two worktree skills are little else)
+- `git` (every skill here uses it; the three worktree skills are little else)
 - `gh`, authenticated, for `handoff` and for `close`'s optional issue/PR check
 - Nothing for `rate-limit-guard`, `resume-after-limit`, or `schedule` — they
   cannot run on OpenCode at all. See [Capability gaps](#capability-gaps).
@@ -20,7 +20,7 @@ project-level):
 ```
 
 Restart OpenCode. The plugin installs through OpenCode's plugin manager and
-registers all eight skills.
+registers all nine skills.
 
 OpenCode uses its own plugin install. If you also use Claude Code, Codex, or
 another harness, install this plugin separately for each one.
@@ -75,7 +75,7 @@ Three gaps matter here, and one of them is disqualifying:
 
 The `lib/*.sh` helpers under `skills/close/` are plain bash. Run them with
 `bash` and pass their `BLOCKED:` / `NOTE:` / `WARN:` lines through verbatim —
-do not reimplement them. The two worktree skills are pure `git` CLI and behave
+do not reimplement them. The three worktree skills are pure `git` CLI and behave
 identically here and on Claude Code.
 
 ## Safety contracts
@@ -91,6 +91,9 @@ identically here and on Claude Code.
   changes or unpushed commits; `--force` is the user's explicit override.
   OpenCode has no structured question tool — ask in the conversation and wait
   for a real answer before forcing anything.
+- `worktree-audit` removes a symlink only with `rm <link>` after confirming its
+  target survives, never edits `.gitignore` or commits, and hands removal to
+  `worktree-teardown`.
 - `worktree-spawn` refuses to run from inside an existing worktree, and stages
   with explicit `git add <path>` in `git-crypt` repos.
 - `restart` is user-triggered recovery. No other skill may invoke it, it never
