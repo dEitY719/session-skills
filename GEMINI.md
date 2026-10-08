@@ -115,12 +115,17 @@ On Antigravity read `antigravity-tools.md` in that same directory instead —
   user's explicit override, not yours, and on Antigravity you must get that
   answer in the conversation. Sync main before deleting the branch so
   `git branch -d` can verify merge status.
-- **`worktree-audit` disposes of nothing it has not identified.** A symlink is
-  removed with `rm <link>` only after its target is confirmed to exist — never
-  `-r` or a trailing slash, which walks into the target. It never edits
-  `.gitignore` or other repo files (it proposes a follow-up issue), never
-  commits (a "commit" verdict is handed off), and never runs
-  `git worktree remove` itself — removal goes through `worktree-teardown`.
+- **`worktree-audit` disposes of nothing it has not identified.** It deletes
+  only on a discard verdict, and only untracked entries that are a symlink or
+  regenerable / setup-documented (cache, `node_modules`, a real `.venv`, build
+  output, lock). A symlink is removed with `rm <link>` only after its target is
+  confirmed to exist — never `-r` or a trailing slash, which walks into the
+  target; a real directory with `rm -r <dir>` (no trailing slash) only after
+  `[ ! -L <dir> ]`. Preserve-verdict data (logs, dumps, eval results) needs the
+  user's confirmation. It never edits `.gitignore` or other repo files (it
+  proposes a follow-up issue), never commits or pushes (a "commit" verdict or
+  unpushed commits are handed off), and never runs `git worktree remove`
+  itself — removal goes through `worktree-teardown`.
 - **`worktree-spawn` refuses to run from inside a worktree.** In a `git-crypt`
   repo it stages with explicit `git add <path>` — never `-A` or `.` — because
   auto-unlocked files can show as modified from a raw-byte versus textconv
