@@ -38,11 +38,13 @@ with a surviving target, caches, setup-regenerable artifacts), then chains to
 - Path missing or not a git checkout → print the error, stop.
 - Any artifact judged "commit" → hand off to `gh-pr:commit` / `session:handoff`, stop.
 - Any artifact judged "preserve" without the user's go-ahead → report, stop.
+- `unpushed>0` → hand off to `gh-pr:create` / `git push` (never `--force`), stop.
 - Teardown pre-flight still refuses → report its `Error:` line, stop. Never
   retry with `--force` unless the user says so.
 
 ## Never
 
-- Recursive or trailing-slash `rm` on a symlink.
+- Recursive or trailing-slash `rm` on a symlink; `rm -r` on a real dir before
+  `[ ! -L <dir> ]`, or on anything tracked or judged preserve.
 - `git worktree remove` by hand.
 - Editing `.gitignore` or other repo files (a follow-up issue is proposed instead).

@@ -27,11 +27,8 @@ identify each untracked or modified entry, judge it, dispose of it safely, and
 hand off to `session:worktree-teardown` when removal is the goal. The script
 collects evidence; **the verdict is yours**. `SKILL_DIR` = this file's directory.
 
-Real case (`wt/issue-17/1`): `?? backend/.venv` blocked teardown. It was a
-symlink to the main repo's 323M venv, created by the repo's documented
-`local-ci.sh` setup, and the root `.venv/` ignore rule is dir-only, so it never
-matched the symlink. Fix: `rm backend/.venv` (link only, target confirmed
-intact). Detail in `references/artifact-patterns.md`.
+Real case (`wt/issue-17/1`): a `?? backend/.venv` symlink to the main repo's
+venv, missed by a dir-only `.venv/` rule. See `references/artifact-patterns.md`.
 
 ## Step 1: List the blockers
 
@@ -41,7 +38,8 @@ git worktree list
 ```
 
 Map each entry to the teardown pre-flight line it triggers (`Error: Uncommitted
-changes detected` for modified or untracked files).
+changes detected` for modified or untracked files). Unpushed commits are the
+other block (`Error: Unpushed commits detected`); Step 2 counts them.
 
 ## Step 2: Collect evidence
 
@@ -49,12 +47,11 @@ changes detected` for modified or untracked files).
 bash "${SKILL_DIR}/lib/audit.sh" <checkout-path>
 ```
 
-Use the current checkout when the user named none. Non-destructive; runs from
-the main repo or the worktree. It prints one
-`ARTIFACT:` line per entry (type, size, mtime, symlink target and whether it
-exists, `git check-ignore -v` rule, creation time vs the branch commit range,
-setup-doc mentions), `HINT:` lines, and a closing `STATUS:` line. Read
-`references/audit-contract.md` for the field format and exit codes.
+Default: the current checkout. Non-destructive; runs from the main repo or the
+worktree. Prints one `ARTIFACT:` line per entry (type, size, mtime, symlink
+target, ignore rule, creation time vs branch commits, setup-doc mentions),
+`HINT:` lines, and a closing `STATUS:` line with `unpushed=<n|none-upstream>`.
+Field format and exit codes: `references/audit-contract.md`.
 
 ## Step 3: Judge each artifact (model judgment)
 
@@ -64,7 +61,7 @@ HINTs are suggestions. Weigh them with `references/artifact-patterns.md`:
 |---|---|---|
 | commit | tracked source change / new work product | Out of scope: hand off to `gh-pr:commit` or `session:handoff`, then stop |
 | gitignore gap | not ignored, but the repo documents it as ignorable | Never edit repo files: propose a follow-up issue |
-| discard | symlink (target confirmed), setup-regenerable, cache, lock | Remove safely now |
+| discard | untracked only: symlink (target confirmed), setup-regenerable, cache, lock | Remove safely now |
 | preserve | unique data: eval results, logs, dumps | Ask the user, or archive first, then remove |
 
 A gitignore-gap artifact that is also regenerable is discarded now **and** gets
@@ -72,9 +69,10 @@ the follow-up issue.
 
 ## MUST NOT
 
-- Never `rm -r`, `rm -rf`, or a trailing slash on a symlink — that walks into
-  the **target**. Confirm `target_exists=yes`, run `rm <link>`, then verify the
-  target still exists.
+- Symlink: only `rm <link>` — never `-r`/`-rf` or a trailing slash, which walks
+  into the **target**. Confirm `target_exists=yes` first, the target after.
+- Real dir (discard verdict, untracked only): `rm -r <dir>`, no trailing
+  slash, and only after `[ ! -L <dir> ]` confirms it is not a link.
 - Never run `git worktree remove` directly — removal goes through
   `session:worktree-teardown`.
 - Never pass `--force` on your own judgment; it is the user's word, relayed.
@@ -83,10 +81,12 @@ the follow-up issue.
 
 ## Step 4: Chain or stop
 
-If removal is the goal and every blocker is resolved, run
-`session:worktree-teardown <worktree-path>` **from the main repo** and carry its
-`[OK] Teardown complete` or `[FAIL]` verdict into the report. If any artifact is
-left for commit or preserve, or the user only asked for an audit, report and stop.
+If removal is the goal, every artifact is resolved, and `unpushed` is `0` or
+`none-upstream`, run `session:worktree-teardown <worktree-path>` **from the main
+repo** and carry its `[OK] Teardown complete` or `[FAIL]` verdict into the
+report. `unpushed>0` is not resolved: hand off to `gh-pr:create` or `git push`
+(never `--force`), then stop. If any artifact is left for commit or preserve,
+or the user only asked for an audit, report and stop.
 
 ## Report
 

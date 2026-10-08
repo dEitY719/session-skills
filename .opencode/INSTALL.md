@@ -91,9 +91,12 @@ identically here and on Claude Code.
   changes or unpushed commits; `--force` is the user's explicit override.
   OpenCode has no structured question tool — ask in the conversation and wait
   for a real answer before forcing anything.
-- `worktree-audit` removes a symlink only with `rm <link>` after confirming its
-  target survives, never edits `.gitignore` or commits, and hands removal to
-  `worktree-teardown`.
+- `worktree-audit` deletes only on a discard verdict and only untracked,
+  regenerable or setup-documented entries: a symlink with `rm <link>` after
+  confirming its target survives, a real directory (cache, `node_modules`, a
+  real `.venv`) with `rm -r <dir>` after `[ ! -L <dir> ]`. Preserve-verdict data
+  needs the user's confirmation. It never edits `.gitignore`, commits, or
+  pushes, and hands removal to `worktree-teardown`.
 - `worktree-spawn` refuses to run from inside an existing worktree, and stages
   with explicit `git add <path>` in `git-crypt` repos.
 - `restart` is user-triggered recovery. No other skill may invoke it, it never

@@ -163,12 +163,18 @@ These are acceptance criteria carried over from dotfiles, not advice:
   merge status.
 - **`session:worktree-audit` collects evidence, the model judges.**
   `lib/audit.sh` never deletes or edits anything; it prints `HINT:` lines, not
-  verdicts. The skill removes a symlink only with `rm <link>` after confirming
-  the target survives (never `-r` or a trailing slash), never edits
+  verdicts. The skill deletes only on a **discard** verdict, and only
+  untracked entries that are a symlink, regenerable (cache, `node_modules`, a
+  real `.venv`, build output, lock), or recreated by a documented setup script:
+  a symlink with `rm <link>` after confirming the target survives (never `-r`
+  or a trailing slash), a real directory with `rm -r <dir>` (no trailing slash)
+  after `[ ! -L <dir> ]`. Preserve-verdict data (logs, dumps, eval results) is
+  removed only with the user's explicit confirmation. It never edits
   `.gitignore` or other repo files (it proposes a follow-up issue), never
-  commits (a "commit" verdict hands off to `gh-pr:commit` / `session:handoff`),
-  and never runs `git worktree remove` — removal goes through
-  `session:worktree-teardown`, with `--force` only on the user's word.
+  commits or pushes (a "commit" verdict or unpushed commits hand off to
+  `gh-pr:commit` / `gh-pr:create` / `session:handoff`), and never runs
+  `git worktree remove` — removal goes through `session:worktree-teardown`,
+  with `--force` only on the user's word.
 - **`session:worktree-spawn` refuses to run from inside a worktree**, and in a
   `git-crypt` repo it stages with explicit `git add <path>` — never `-A` or
   `.` — because auto-unlocked files can show as modified from a raw-byte versus
