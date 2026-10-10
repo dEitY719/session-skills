@@ -96,4 +96,4 @@ ending with the `Next:` hint.
   구동하는 사람이 그대로 읽을 수 있어야 한다.
 - 본 스킬은 *미완* 작업의 세션 연속성 전용이다. 일회성 *완료* 기록은
   `gh-issue:issue-create` / `gh-issue:discussion-create`, 완료 세션의 vault Inbox 노트는
-  `pkm:obsidian-session-clip` 몫이다.
+  `pkm:obsidian-clip-session` 몫이다.

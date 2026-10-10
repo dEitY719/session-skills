@@ -96,5 +96,5 @@ scratchpad 경로는 세션이 시스템 프롬프트로 받은 값을 그대로
 
 같은 "세션 끝" 자리, 다른 동사 — `session:handoff` (미완 작업을 이슈
 코멘트로 인계) · `session:restart` (중단된 작업을 이어서 재개) ·
-`notes:task-history` / `pkm:obsidian-session-clip` (세션 기록 남기기).
+`notes:task-history` / `pkm:obsidian-clip-session` (세션 기록 남기기).
 본 스킬은 감사만 하고 저장소를 바꾸지 않는다.
