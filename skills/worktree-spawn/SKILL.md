@@ -44,22 +44,24 @@ does both. Read `references/agent-detection.md` only when overriding with
 ## Step 2: Create the worktree
 
 ```
-bash "${SKILL_DIR}/lib/spawn.sh" [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [<branch>]
+bash "${SKILL_DIR}/lib/spawn.sh" [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [--no-enter] [<branch>]
 ```
 
-The script validates preconditions (git repo, not already inside a worktree,
-writable parent), detects the agent, takes the spawn lock, computes the index,
+The script validates preconditions (git repo, writable parent), computes paths
+from the main worktree (so a call from a linked worktree spawns a sibling, or
+adopts it as `[OK] Worktree already isolated` when its branch matches `--task`),
+detects the agent, takes the spawn lock, computes the index,
 resolves the base ref (`--base` > `origin/main` > `main`/`master` > `HEAD`),
 creates the worktree with git-crypt auto-unlock or bypass, appends the audit
 log, and prints the report. Stop and surface stderr on any non-zero exit.
 `references/bash-commands.md` is its full contract: arguments, exit codes,
 output lines, and what stays model judgment.
 
-**Claude Code only:** `EnterWorktree` creates and enters the worktree natively;
-this skill still owns the index scan, the git-crypt unlock and the audit log.
-Read `references/native-tools.md` and follow it in place of this step. Every
-other harness (Codex, Gemini, Kimi, opencode) has no such tool and uses the
-script above.
+**Claude Code only, without `--no-enter`:** `EnterWorktree` creates and enters
+the worktree natively; this skill still owns the index scan, the git-crypt
+unlock and the audit log. Read `references/native-tools.md` and follow it in
+place of this step. With `--no-enter` (coordinators) use the script above and
+leave the cwd alone. Every other harness uses the script.
 
 ## Step 3: Report and move
 
@@ -82,7 +84,7 @@ In an auto-unlocked worktree use explicit `git add <path>`, never `-A` or `.`:
 git-crypt files can show as `M` from a raw-byte vs. textconv mismatch.
 
 The script cannot change the caller's cwd. Relay the `cd` command it prints as
-guidance, then execute it yourself as the AI agent.
+guidance, then execute it yourself as the AI agent -- unless `--no-enter`.
 
 On a non-zero exit, emit a structured failure verdict instead, filled in from
 the script's `Error:` line and exit code:

@@ -12,7 +12,8 @@ the worktrees that already exist.
 | Situation | Action |
 |---|---|
 | Not a git repo | Print error, stop |
-| Inside a worktree | Print error, stop (always use a new terminal on the main repo) |
+| Inside a linked worktree, `--task` slug matches the current branch (`wt/<agent>/<k>-<slug>` or `wt/<slug>/<k>`) | Adopt it: `[OK] Worktree already isolated`, exit 0; dirty only warns on stderr |
+| Inside a linked worktree, slug differs or no `--task` | Spawn a sibling of the main worktree (paths from `git-common-dir`); the current worktree is untouched |
 | Base ref not found | Suggest `main`/`origin/main`, stop |
 | Path already exists | Auto-increment to next index |
 | Branch in use by another worktree | Print error, ask user for different name |

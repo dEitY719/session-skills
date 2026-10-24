@@ -175,7 +175,11 @@ These are acceptance criteria carried over from dotfiles, not advice:
   `gh-pr:commit` / `gh-pr:create` / `session:handoff`), and never runs
   `git worktree remove` — removal goes through `session:worktree-teardown`,
   with `--force` only on the user's word.
-- **`session:worktree-spawn` refuses to run from inside a worktree**, and in a
+- **`session:worktree-spawn` never nests a worktree**: paths come from the main
+  worktree (`git-common-dir`), so a call from inside a linked worktree spawns a
+  sibling, or adopts the current one (`[OK] Worktree already isolated`, exit 0)
+  when its branch matches `--task`. `--no-enter` keeps the caller's cwd (no
+  `EnterWorktree`) for coordinators. In a
   `git-crypt` repo it stages with explicit `git add <path>` — never `-A` or
   `.` — because auto-unlocked files can show as modified from a raw-byte versus
   textconv mismatch. When no key file resolves it falls back to the bypass path

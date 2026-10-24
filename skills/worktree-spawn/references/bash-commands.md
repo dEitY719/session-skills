@@ -6,7 +6,7 @@ hand -- the lock, the index scan and the git-crypt sequencing only hold when
 they run together.
 
 ```
-bash "${SKILL_DIR}/lib/spawn.sh" [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [<branch>]
+bash "${SKILL_DIR}/lib/spawn.sh" [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [--no-enter] [<branch>]
 ```
 
 ## Arguments
@@ -17,6 +17,7 @@ bash "${SKILL_DIR}/lib/spawn.sh" [--ai <name>] [--task <slug>] [--base <ref>] [-
 | `--task <slug>` | Branch becomes `wt/<agent>/<N>-<slug>`. The script normalizes (lowercase, non-alnum to hyphens, 30 chars); it does **not** translate -- see "Model judgment" below. |
 | `--base <ref>` | Base ref. Unresolvable ref is a hard error, not a fallback. |
 | `--dry-run` | Prints agent, path, branch, base and the exact `git worktree add` line, then stops. Nothing is created and nothing is logged. |
+| `--no-enter` | For coordinators (`gh-flow:wave` / `gh-flow:waves`) that must not move into the worktree. The report replaces the `cd` line with `Enter:  skipped (--no-enter; the caller does not follow)`. On Claude Code it also means: use this script, not `EnterWorktree`. |
 | `<branch>` | Explicit branch name, used verbatim instead of `wt/<agent>/<N>`. |
 | `-h` / `--help` | Prints the script's own usage. The skill's user-facing help is `references/help.md`. |
 
@@ -24,8 +25,8 @@ bash "${SKILL_DIR}/lib/spawn.sh" [--ai <name>] [--task <slug>] [--base <ref>] [-
 
 | Code | Meaning |
 |---|---|
-| 0 | Worktree created, or `--dry-run` plan printed. |
-| 1 | Precondition failure (not a git repo, called from inside a worktree, parent not writable), unknown option, unresolvable `--base`, or a failing `git worktree add`. |
+| 0 | Worktree created, current worktree adopted (`already isolated`), or `--dry-run` plan printed. |
+| 1 | Precondition failure (not a git repo, parent not writable), unknown option, unresolvable `--base`, or a failing `git worktree add`. |
 | 2 | Lock acquisition failed after 3 retries. Another spawn is mid-flight. |
 
 Stop on any non-zero exit and surface stderr. Never retry a failed spawn
@@ -50,8 +51,22 @@ precedes it):
   Base:   <base ref>
   git-crypt: <report>          # only when the repo uses git-crypt
   Teardown: git push -u origin <branch> && git worktree remove <path> && git branch -d <branch>
-  cd <absolute worktree path>
+  cd <absolute worktree path>     # with --no-enter: Enter:  skipped (--no-enter; the caller does not follow)
 ```
+
+Called from inside a linked worktree whose branch already is this task's
+(see "Called from inside a linked worktree" below), nothing is created and the
+block is instead:
+
+```
+[OK] Worktree already isolated
+  Path:   <current worktree path>
+  Branch: <current branch>
+  Base:   <base ref>
+```
+
+A dirty adopted worktree adds one `Warning: adopted worktree has uncommitted
+changes (resuming the same task)` line on **stderr**; the exit code stays 0.
 
 The `git-crypt:` line is one of:
 
@@ -62,8 +77,12 @@ The `git-crypt:` line is one of:
 
 ## What the script does, in order
 
-1. Validate: git repo, `git-dir == git-common-dir` (refuse from inside a
-   worktree), warn on a dirty tree, parent directory writable.
+1. Validate: git repo, warn on a dirty tree, parent directory writable. The
+   project name and parent directory come from the **main** worktree
+   (`dirname` of the absolute `git-common-dir`), so a call from inside a
+   linked worktree computes the same `../<main project>-<agent>-<N>` sibling
+   as a call from main -- nesting is impossible. Inside a linked worktree the
+   adopt rule below runs first.
 2. Detect the agent (`references/agent-detection.md` for the chain).
    1.5 Detect git-crypt and resolve the key file
    (`references/options-and-errors.md` for the priority chain).
@@ -76,6 +95,13 @@ The `git-crypt:` line is one of:
    `$(git rev-parse --git-common-dir)/ai-worktree-spawn.log`.
 8. Print the report above.
 
+## Called from inside a linked worktree
+
+| Situation | Result |
+|---|---|
+| `--task <slug>` given and the current branch is `wt/<agent>/<k>-<slug>` or `wt/<slug>/<k>` (the dotfiles `gwt spawn --wt-name <slug>` form), slug compared after normalization | Adopt: `[OK] Worktree already isolated`, exit 0, nothing created or logged. Dirty is the same task resuming, so it only warns on stderr. |
+| Slug differs, or no `--task` | Normal spawn of a sibling of the main worktree. The current worktree is not touched. |
+
 ## Model judgment -- what the script cannot do
 
 - **Translate a Korean `--task`.** `normalize_slug` strips non-ASCII, so
@@ -85,4 +111,5 @@ The `git-crypt:` line is one of:
   it guesses wrong.
 - **Stage files afterwards.** In an auto-unlocked worktree use explicit
   `git add <path>`, never `-A` or `.`.
-- **Change the caller's cwd.** The script prints `cd <path>`; you execute it.
+- **Change the caller's cwd.** The script prints `cd <path>`; you execute it --
+  unless `--no-enter` was passed, in which case you stay where you are.
