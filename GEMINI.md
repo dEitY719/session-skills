@@ -126,7 +126,7 @@ On Antigravity read `antigravity-tools.md` in that same directory instead —
   proposes a follow-up issue), never commits or pushes (a "commit" verdict or
   unpushed commits are handed off), and never runs `git worktree remove`
   itself — removal goes through `worktree-teardown`.
-- **`worktree-spawn` never nests a worktree.** Paths come from the main
+- **`worktree-spawn`'s `lib/spawn.sh` never nests a worktree.** Paths come from the main
   worktree, so a call from a linked worktree spawns a sibling, or adopts the
   current one when its branch matches `--task`. In a `git-crypt`
   repo it stages with explicit `git add <path>` — never `-A` or `.` — because

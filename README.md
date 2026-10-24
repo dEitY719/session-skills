@@ -25,7 +25,7 @@ this repo owns no shared assets — it links out for the
 | `rate-limit-guard` | `/session:rate-limit-guard --reset HH:MM [--max-cycles N] [--cycle-window M] <command>` | **[Claude Code only]** Arms a durable one-shot cron for `reset + 5min`, persists `.claude/.rate-limit-guard.json`, runs the wrapped command, and tears the safety net down on success. |
 | `resume-after-limit` | `/session:resume-after-limit [<command>]` | **[Claude Code only]** What that cron invokes. Reads the state file, stops hard on a worktree mismatch, pre-arms the next cycle, re-runs the wrapped command, cleans up on success. |
 | `schedule` | `/session:schedule [--time M] "<command>"` | **[Claude Code only]** Generic session-local deferral: run any slash command or task in M minutes (default 5). One-shot; the built-in `/loop` is for recurring interval runs. |
-| `worktree-spawn` | `/session:worktree-spawn [--ai <name>] [--task <slug>] [--base <ref>] [<branch>]` | Creates `../<project>-<agent>-<N>` on a `wt/<agent>/<N>` branch so parallel agents do not collide. Detects the agent, picks the next free index, resolves the base ref, and handles `git-crypt` repos. |
+| `worktree-spawn` | `/session:worktree-spawn [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [--no-enter] [<branch>]` | Creates `../<project>-<agent>-<N>` on a `wt/<agent>/<N>` branch so parallel agents do not collide. Detects the agent, picks the next free index, resolves the base ref, and handles `git-crypt` repos. |
 | `worktree-audit` | `/session:worktree-audit [<checkout-path>]` | Explains every untracked or modified leftover that blocks a worktree removal — who made it, when, and why — and judges it commit / gitignore gap / discard / preserve. Removes only the safe cases (a symlink via `rm <link>` once its target is confirmed), never edits `.gitignore` or commits, then chains to `worktree-teardown`. |
 | `worktree-teardown` | `/session:worktree-teardown <worktree-path> [--force] [--keep-branch] [--dry-run]` | Removes the worktree, syncs main, deletes the branch. **The destructive one** — blocks on uncommitted or unpushed work unless you pass `--force`. |
 
@@ -68,7 +68,7 @@ its `Next:` line points at `handoff`.
 | `rate-limit-guard` | Claude Code's `CronCreate` / `CronDelete`, `python3`, and a session left open (or reopened) in the same worktree so the durable cron can fire. Run `/usage` first to learn your reset time. |
 | `resume-after-limit` | The same, plus `.claude/.rate-limit-guard.json` written by the guard — or an explicit `<command>` argument. |
 | `schedule` | Claude Code's `CronCreate` and `python3`. |
-| `worktree-spawn` | `git`, a writable parent directory, and the main repo as the working directory. Optional: a `git-crypt` key at `~/.config/git-crypt/<repo>.key` for auto-unlock. |
+| `worktree-spawn` | `git` and a writable parent directory of the main worktree (a call from a linked worktree spawns a sibling of main). Optional: a `git-crypt` key at `~/.config/git-crypt/<repo>.key` for auto-unlock. |
 | `worktree-audit` | `bash` and `git`; run it from the main repo or the worktree. |
 | `worktree-teardown` | `git`, run from the main repo with the worktree path as an argument. |
 
