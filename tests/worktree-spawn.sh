@@ -6,7 +6,8 @@
 # (b) linked worktree on wt/<agent>/<k>-<slug>, --task <slug>: adopted, exit 0,
 # nothing created, dirty -> stderr warning (c) same for wt/<slug>/<k>
 # (d) slug mismatch: sibling of MAIN, named after the main project
-# (e) no --task inside a worktree: sibling spawn too (f) --no-enter: no cd line.
+# (e) no --task inside a worktree: sibling spawn too (f) --no-enter: no cd line
+# (g) a linked worktree of a bare repo is refused.
 # Offline; uses temp git repos.
 set -uo pipefail
 
@@ -109,5 +110,13 @@ check "(f) exit 0" "0" "$?"
 has "(f) path" "Path:   $p/proj-tst-4" "$out"
 has "(f) enter skipped" "Enter:  skipped (--no-enter" "$out"
 lacks "(f) no cd line" "  cd " "$out"
+
+# (g) linked worktree of a bare repo: refused, nothing created
+git clone -q --bare "$main" "$tmp/bare.git"
+git -C "$tmp/bare.git" worktree add -q "$tmp/bare-wt" main
+out=$(cd "$tmp/bare-wt" && bash "$spawn" --ai tst 2>&1)
+check "(g) bare exit 1" "1" "$?"
+has "(g) bare error" "bare repository" "$out"
+check "(g) nothing created" "" "$(find "$tmp" -mindepth 1 -maxdepth 1 -name '*-tst-*')"
 
 exit $fail
