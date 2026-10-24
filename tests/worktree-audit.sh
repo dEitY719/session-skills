@@ -99,9 +99,10 @@ has "(m) nested target exists" "	target_exists=yes	" "$nested"
 has "(m) nested gap hint" "path=service/.venv	suggest=gitignore-gap" "$out"
 
 # (h) nothing was deleted or changed
+survive=0
 [ -L "$wt/backend/.venv" ] && [ -f "$main/backend/.venv/bin/python" ] && [ -f "$wt/notes.txt" ] &&
-    [ -f "$wt/build/out.o" ]
-check "(h) link, target, files survive" "0" "$?"
+    [ -f "$wt/build/out.o" ] || survive=1
+check "(h) link, target, files survive" "0" "$survive"
 
 # (f) clean checkout -> zero artifacts, exit 0
 clean=$tmp/clean
