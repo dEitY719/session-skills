@@ -7,7 +7,10 @@
 # staging caveat, the final cd).
 #
 # Steps, in the order they run:
-#   1    validate preconditions -- git repo, NOT inside a worktree, writable parent
+#   1    validate preconditions -- git repo, writable parent. Paths come from
+#        the MAIN worktree (git-common-dir), so a call from inside a linked
+#        worktree spawns a sibling, never a nested one. Inside a linked
+#        worktree whose branch already matches --task, adopt it and exit 0.
 #   2    detect the AI agent                (references/agent-detection.md)
 #   1.5  detect git-crypt, resolve key file (references/options-and-errors.md)
 #   3.5  acquire the spawn lock             ($GIT_COMMON/ai-worktree-spawn.lock)
@@ -20,8 +23,8 @@
 #   8    print the [OK] report
 #
 # Usage:
-#   spawn.sh [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [<branch>]
-# Exit: 0 = worktree created, or --dry-run plan printed
+#   spawn.sh [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [--no-enter] [<branch>]
+# Exit: 0 = worktree created, current worktree adopted, or --dry-run plan printed
 #       1 = precondition failure, unknown option, bad base ref, git failure
 #       2 = lock acquisition failed after MAX_RETRIES
 #
@@ -40,7 +43,7 @@ usage() {
 spawn.sh -- session:worktree-spawn's deterministic half
 
 Usage:
-  spawn.sh [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [<branch>]
+  spawn.sh [--ai <name>] [--task <slug>] [--base <ref>] [--dry-run] [--no-enter] [<branch>]
 
   --ai <name>     Override agent detection.
   --task <slug>   Append a slug to the branch name. English only -- the caller
@@ -48,9 +51,15 @@ Usage:
                   30 chars).
   --base <ref>    Base ref. Default: origin/main > main/master > HEAD.
   --dry-run       Print the plan (agent, path, branch, base, command) and stop.
+  --no-enter      Caller stays where it is (coordinators): the report omits the
+                  `cd` line.
   <branch>        Explicit branch name instead of wt/<agent>/<N>.
 
-Exit: 0 = created or plan printed, 1 = precondition/git failure, 2 = lock failed.
+Inside a linked worktree whose branch is wt/<agent>/<k>-<slug> or wt/<slug>/<k>
+for the --task slug, nothing is created: "[OK] Worktree already isolated".
+
+Exit: 0 = created, adopted or plan printed, 1 = precondition/git failure,
+      2 = lock failed.
 EOF
 }
 
@@ -59,6 +68,7 @@ TASK_SLUG=""
 BASE_OVERRIDE=""
 EXPLICIT_BRANCH=""
 DRY_RUN=false
+NO_ENTER=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -67,24 +77,76 @@ while [[ $# -gt 0 ]]; do
         --task)         TASK_SLUG="${2:?Error: --task needs a value}"; shift 2 ;;
         --base)         BASE_OVERRIDE="${2:?Error: --base needs a value}"; shift 2 ;;
         --dry-run)      DRY_RUN=true; shift ;;
+        --no-enter)     NO_ENTER=true; shift ;;
         --*)            echo "Error: Unknown option: $1" >&2; usage >&2; exit 1 ;;
         *)              EXPLICIT_BRANCH="$1"; shift ;;
     esac
 done
 
+normalize_slug() {
+    # Lowercase, replace non-alnum with hyphens, trim, max 30 chars
+    echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g; s/--*/-/g; s/^-//; s/-$//' | cut -c1-30
+}
+
+resolve_base_ref() {
+    local explicit_base="${1:-}"
+    local ref
+
+    # Priority 1: explicit --base argument
+    if [[ -n "$explicit_base" ]]; then
+        if git rev-parse --verify --quiet "$explicit_base" >/dev/null 2>&1; then
+            echo "$explicit_base"
+            return
+        fi
+        echo "Error: Base ref not found: $explicit_base" >&2
+        exit 1
+    fi
+
+    # Priority 2-3: origin/main, then main or master
+    for ref in origin/main main master; do
+        if git rev-parse --verify --quiet "$ref" >/dev/null 2>&1; then
+            echo "$ref"; return
+        fi
+    done
+
+    # Priority 4: current HEAD
+    echo "HEAD"
+}
+
 # ---- Step 1: Validate preconditions -----------------------------------------
 
-if ! TOPLEVEL="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+if ! CURRENT_TOPLEVEL="$(git rev-parse --show-toplevel 2>/dev/null)"; then
     echo "Error: Not a git repository."
     exit 1
 fi
 
-# Must NOT be inside an existing worktree -- block if so
-GIT_COMMON="$(git rev-parse --git-common-dir)"
-GIT_DIR="$(git rev-parse --git-dir)"
+GIT_COMMON="$(git rev-parse --path-format=absolute --git-common-dir)"
+GIT_DIR="$(git rev-parse --path-format=absolute --git-dir)"
+TOPLEVEL="$CURRENT_TOPLEVEL"
 if [[ "$GIT_DIR" != "$GIT_COMMON" ]]; then
-    echo "Error: Cannot spawn from inside a worktree. Run from the main repository."
-    exit 1
+    # Linked worktree: every path is computed from the MAIN worktree, so the
+    # new one is a sibling of main and nesting is structurally impossible.
+    TOPLEVEL="$(dirname "$GIT_COMMON")"
+
+    # Adopt the current worktree when it already is this task's workspace:
+    # wt/<agent>/<k>-<slug> (this script) or wt/<slug>/<k> (gwt --wt-name).
+    if [[ -n "$TASK_SLUG" ]]; then
+        SLUG="$(normalize_slug "$TASK_SLUG")"
+        CUR_BRANCH="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+        if [[ -n "$SLUG" ]] && { [[ "$CUR_BRANCH" =~ ^wt/[^/]+/[0-9]+-(.+)$ && "${BASH_REMATCH[1]}" == "$SLUG" ]] ||
+            [[ "$CUR_BRANCH" =~ ^wt/(.+)/[0-9]+$ && "${BASH_REMATCH[1]}" == "$SLUG" ]]; }; then
+            # Dirty is the same task resuming (e.g. a re-dispatch after a
+            # rate limit), not a reason to stop: warn only.
+            if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+                echo "Warning: adopted worktree has uncommitted changes (resuming the same task)" >&2
+            fi
+            echo "[OK] Worktree already isolated"
+            echo "  Path:   ${CURRENT_TOPLEVEL}"
+            echo "  Branch: ${CUR_BRANCH}"
+            echo "  Base:   $(resolve_base_ref "$BASE_OVERRIDE")"
+            exit 0
+        fi
+    fi
 fi
 
 # Warn on dirty state (do not block)
@@ -212,11 +274,6 @@ WORKTREE_PATH="${PARENT}/${PROJECT}-${AGENT}-${NEXT_INDEX}"
 
 # ---- Step 4: Determine branch name ------------------------------------------
 
-normalize_slug() {
-    # Lowercase, replace non-alnum with hyphens, trim, max 30 chars
-    echo "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g; s/--*/-/g; s/^-//; s/-$//' | cut -c1-30
-}
-
 if [[ -n "$EXPLICIT_BRANCH" ]]; then
     BRANCH="$EXPLICIT_BRANCH"
 elif [[ -n "$TASK_SLUG" ]]; then
@@ -227,31 +284,6 @@ else
 fi
 
 # ---- Step 5: Determine base ref ---------------------------------------------
-
-resolve_base_ref() {
-    local explicit_base="${1:-}"
-    local ref
-
-    # Priority 1: explicit --base argument
-    if [[ -n "$explicit_base" ]]; then
-        if git rev-parse --verify --quiet "$explicit_base" >/dev/null 2>&1; then
-            echo "$explicit_base"
-            return
-        fi
-        echo "Error: Base ref not found: $explicit_base" >&2
-        exit 1
-    fi
-
-    # Priority 2-3: origin/main, then main or master
-    for ref in origin/main main master; do
-        if git rev-parse --verify --quiet "$ref" >/dev/null 2>&1; then
-            echo "$ref"; return
-        fi
-    done
-
-    # Priority 4: current HEAD
-    echo "HEAD"
-}
 
 # `exit 1` above fires inside the command substitution's subshell; set -e turns
 # that non-zero status into a stop here, which is the intended behaviour.
@@ -328,4 +360,8 @@ if [[ -n "$GIT_CRYPT_REPORT" ]]; then
     echo "  git-crypt: ${GIT_CRYPT_REPORT}"
 fi
 echo "  Teardown: git push -u origin ${BRANCH} && git worktree remove ${WORKTREE_PATH} && git branch -d ${BRANCH}"
-echo "  cd ${WORKTREE_PATH}"
+if [[ "$NO_ENTER" == true ]]; then
+    echo "  Enter:  skipped (--no-enter; the caller does not follow)"
+else
+    echo "  cd ${WORKTREE_PATH}"
+fi

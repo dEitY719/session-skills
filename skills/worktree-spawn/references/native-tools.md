@@ -5,6 +5,11 @@ session into it. No other harness in this plugin's matrix (Codex, Gemini, Kimi,
 opencode) has an equivalent, so this branch is Claude Code only; everywhere else
 `lib/spawn.sh` is the whole skill and this file does not apply.
 
+**`--no-enter` skips this file entirely.** A coordinator (`gh-flow:wave` /
+`gh-flow:waves`) must not have its session cwd moved, and `EnterWorktree` moves
+it -- so with `--no-enter` run `lib/spawn.sh` as on every other harness and do
+not `cd` afterwards.
+
 `EnterWorktree` replaces the `git worktree add` call and the cwd move. It does
 **not** cover the four things this skill exists for, so they are layered on top
 by hand.
@@ -33,11 +38,14 @@ task rather than this session's own workspace.
    English slug, then let the script compute the rest:
    `bash "${SKILL_DIR}/lib/spawn.sh" [--task <slug>] --dry-run` prints the
    agent, path, branch and base without creating anything. Take `Agent:` and
-   `Branch:` from that output -- it normalizes the slug too. Only if the script
-   cannot be run, derive them by hand the way it does: `basename "$(git
-   rev-parse --show-toplevel)"` for the project, `references/agent-detection.md`
-   for the agent, then scan the parent for `{project}-{agent}-N` and take
-   `max(N)+1`.
+   `Branch:` from that output -- it normalizes the slug too. If it prints
+   `[OK] Worktree already isolated` instead, the session is already in this
+   task's worktree: report that and stop -- no `EnterWorktree`. Only if the
+   script cannot be run, derive them by hand the way it does: `basename
+   "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"`
+   for the project (the main worktree, not the current one),
+   `references/agent-detection.md` for the agent, then scan the main
+   worktree's parent for `{project}-{agent}-N` and take `max(N)+1`.
 2. **Create.** `EnterWorktree` with `name` set to the branch name from Step 1 --
    `wt/<agent>/<N>` or `wt/<agent>/<N>-<slug>`, both valid under the name rules.
    Pass an explicit `<branch>` argument through unchanged.
@@ -63,5 +71,9 @@ task rather than this session's own workspace.
 - A base ref other than the current HEAD is required (`--base`); `EnterWorktree`
   exposes no base parameter.
 - Concurrent spawns need the `ai-worktree-spawn.lock` serialization.
+- `--no-enter`: the caller's cwd must not move.
+- `EnterWorktree` puts the worktree under `<repo>/.claude/worktrees/` inside
+  the main checkout, which shows as untracked in a repo that does not ignore
+  `.claude/`.
 
 Nothing is lost by using the script on Claude Code -- it is the same skill.

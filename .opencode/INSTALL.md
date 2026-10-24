@@ -97,7 +97,8 @@ identically here and on Claude Code.
   real `.venv`) with `rm -r <dir>` after `[ ! -L <dir> ]`. Preserve-verdict data
   needs the user's confirmation. It never edits `.gitignore`, commits, or
   pushes, and hands removal to `worktree-teardown`.
-- `worktree-spawn` refuses to run from inside an existing worktree, and stages
+- `worktree-spawn` never nests: from a linked worktree it spawns a sibling of
+  main, or adopts the current one when its branch matches `--task`, and stages
   with explicit `git add <path>` in `git-crypt` repos.
 - `restart` is user-triggered recovery. No other skill may invoke it, it never
   re-runs a process skill whose output is already in context, and it never
