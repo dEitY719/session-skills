@@ -120,21 +120,31 @@ if ! CURRENT_TOPLEVEL="$(git rev-parse --show-toplevel 2>/dev/null)"; then
     exit 1
 fi
 
-GIT_COMMON="$(git rev-parse --path-format=absolute --git-common-dir)"
-GIT_DIR="$(git rev-parse --path-format=absolute --git-dir)"
+# cd+pwd rather than --path-format=absolute, which needs git >= 2.31.
+GIT_COMMON="$(cd "$(git rev-parse --git-common-dir)" && pwd)"
+GIT_DIR="$(cd "$(git rev-parse --git-dir)" && pwd)"
 TOPLEVEL="$CURRENT_TOPLEVEL"
 if [[ "$GIT_DIR" != "$GIT_COMMON" ]]; then
     # Linked worktree: every path is computed from the MAIN worktree, so the
     # new one is a sibling of main and nesting is structurally impossible.
     TOPLEVEL="$(dirname "$GIT_COMMON")"
+    # A submodule's common dir is <super>/.git/modules/<name>; its main
+    # worktree is core.worktree (relative to that dir), not the dirname.
+    if MAIN_WT="$(git config --file "$GIT_COMMON/config" core.worktree)"; then
+        TOPLEVEL="$(cd "$GIT_COMMON" && cd "$MAIN_WT" && pwd)"
+    fi
 
     # Adopt the current worktree when it already is this task's workspace:
     # wt/<agent>/<k>-<slug> (this script) or wt/<slug>/<k> (gwt --wt-name).
-    if [[ -n "$TASK_SLUG" ]]; then
+    # An explicit <branch> wins over the slug, as it does for a fresh spawn.
+    if [[ -n "$TASK_SLUG" && -z "$EXPLICIT_BRANCH" ]]; then
         SLUG="$(normalize_slug "$TASK_SLUG")"
         CUR_BRANCH="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
         if [[ -n "$SLUG" ]] && { [[ "$CUR_BRANCH" =~ ^wt/[^/]+/[0-9]+-(.+)$ && "${BASH_REMATCH[1]}" == "$SLUG" ]] ||
             [[ "$CUR_BRANCH" =~ ^wt/(.+)/[0-9]+$ && "${BASH_REMATCH[1]}" == "$SLUG" ]]; }; then
+            # Assignment, not inline $(...) in echo: set -e must stop on a bad
+            # --base before any [OK] line is printed.
+            BASE_REF="$(resolve_base_ref "$BASE_OVERRIDE")"
             # Dirty is the same task resuming (e.g. a re-dispatch after a
             # rate limit), not a reason to stop: warn only.
             if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
@@ -143,7 +153,7 @@ if [[ "$GIT_DIR" != "$GIT_COMMON" ]]; then
             echo "[OK] Worktree already isolated"
             echo "  Path:   ${CURRENT_TOPLEVEL}"
             echo "  Branch: ${CUR_BRANCH}"
-            echo "  Base:   $(resolve_base_ref "$BASE_OVERRIDE")"
+            echo "  Base:   ${BASE_REF}"
             exit 0
         fi
     fi

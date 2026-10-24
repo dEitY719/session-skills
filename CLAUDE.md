@@ -175,7 +175,7 @@ These are acceptance criteria carried over from dotfiles, not advice:
   `gh-pr:commit` / `gh-pr:create` / `session:handoff`), and never runs
   `git worktree remove` — removal goes through `session:worktree-teardown`,
   with `--force` only on the user's word.
-- **`session:worktree-spawn` never nests a worktree**: paths come from the main
+- **`session:worktree-spawn`'s `lib/spawn.sh` never nests a worktree**: paths come from the main
   worktree (`git-common-dir`), so a call from inside a linked worktree spawns a
   sibling, or adopts the current one (`[OK] Worktree already isolated`, exit 0)
   when its branch matches `--task`. `--no-enter` keeps the caller's cwd (no

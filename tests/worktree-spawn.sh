@@ -79,6 +79,15 @@ has "(c) branch" "Branch: wt/login-feature/2" "$out"
 check "(c) nothing created" "$before" "$(wtcount)"
 check "(c) clean -> no stderr" "" "$(cat "$err")"
 
+# (c2) adopt with an unresolvable --base is a hard error, not an [OK]
+out=$(cd "$p/adopt-b" && bash "$spawn" --ai tst --task login-feature --base nope 2>&1)
+check "(c2) bad base exit 1" "1" "$?"
+lacks "(c2) no [OK]" "[OK]" "$out"
+
+# (c3) an explicit <branch> wins over a matching slug: spawn, not adopt
+out=$(cd "$p/adopt-b" && bash "$spawn" --ai tst --task login-feature --dry-run explicit-br 2>&1)
+has "(c3) explicit branch planned" "Branch:  explicit-br" "$out"
+
 # (d) slug mismatch -> sibling of main named after the main project
 before=$(wtcount)
 out=$(cd "$p/adopt-b" && bash "$spawn" --ai tst --task other-task 2>&1)
@@ -87,7 +96,7 @@ has "(d) ready" "[OK] Worktree ready" "$out"
 has "(d) sibling path" "Path:   $p/proj-tst-2" "$out"
 has "(d) branch" "Branch: wt/tst/2-other-task" "$out"
 check "(d) created" "$((before + 1))" "$(wtcount)"
-check "(d) not nested" "" "$(find "$p/adopt-b" -mindepth 1 -maxdepth 1 -name 'adopt-b-*')"
+check "(d) not named after the linked worktree" "" "$(find "$p" -mindepth 1 -maxdepth 1 -name 'adopt-b-*')"
 
 # (e) no --task inside a worktree -> sibling spawn
 out=$(cd "$p/adopt-a" && bash "$spawn" --ai tst 2>&1)
