@@ -127,6 +127,11 @@ TOPLEVEL="$CURRENT_TOPLEVEL"
 if [[ "$GIT_DIR" != "$GIT_COMMON" ]]; then
     # Linked worktree: every path is computed from the MAIN worktree, so the
     # new one is a sibling of main and nesting is structurally impossible.
+    # A bare repo has no main worktree to be a sibling of: refuse, as before.
+    if [[ "$(git config --file "$GIT_COMMON/config" --bool core.bare 2>/dev/null)" == true ]]; then
+        echo "Error: Cannot locate a main worktree: $GIT_COMMON is a bare repository." >&2
+        exit 1
+    fi
     TOPLEVEL="$(dirname "$GIT_COMMON")"
     # A submodule's common dir is <super>/.git/modules/<name>; its main
     # worktree is core.worktree (relative to that dir), not the dirname.

@@ -41,9 +41,10 @@ task rather than this session's own workspace.
    `Branch:` from that output -- it normalizes the slug too. If it prints
    `[OK] Worktree already isolated` instead, the session is already in this
    task's worktree: report that and stop -- no `EnterWorktree`. Only if the
-   script cannot be run, derive them by hand the way it does: `basename
-   "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"`
-   for the project (the main worktree, not the current one),
+   script cannot be run, derive them by hand the way it does: the project is
+   the basename of the **main** worktree, not the current one -- the parent
+   of the absolute `git rev-parse --git-common-dir`, or, in a submodule, that
+   dir's `core.worktree` (`lib/spawn.sh` Step 1 is the exact computation);
    `references/agent-detection.md` for the agent, then scan the main
    worktree's parent for `{project}-{agent}-N` and take `max(N)+1`.
 2. **Create.** `EnterWorktree` with `name` set to the branch name from Step 1 --

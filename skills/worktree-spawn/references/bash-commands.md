@@ -81,8 +81,9 @@ The `git-crypt:` line is one of:
    project name and parent directory come from the **main** worktree
    (`dirname` of the absolute `git-common-dir`), so a call from inside a
    linked worktree computes the same `../<main project>-<agent>-<N>` sibling
-   as a call from main -- nesting is impossible. Inside a linked worktree the
-   adopt rule below runs first.
+   as a call from main -- nesting is impossible (a submodule uses its
+   `core.worktree`; a linked worktree of a bare repo is refused with exit 1).
+   Inside a linked worktree the adopt rule below runs first.
 2. Detect the agent (`references/agent-detection.md` for the chain).
    1.5 Detect git-crypt and resolve the key file
    (`references/options-and-errors.md` for the priority chain).
