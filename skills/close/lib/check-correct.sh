@@ -247,7 +247,8 @@ EOF
     _sr_ok=0
     _sr_bad=0
     while IFS= read -r _sr_p; do
-        (cd "$_sr_top" && timeout "$RULE_TEST_TIMEOUT" bats "$_sr_p") >/dev/null 2>&1
+        # </dev/null: 루프 stdin 은 경로 목록 heredoc 이라 테스트가 읽으면 나머지 경로가 사라진다
+        (cd "$_sr_top" && timeout "$RULE_TEST_TIMEOUT" bats "$_sr_p") </dev/null >/dev/null 2>&1
         _sr_rc=$?
         if [ "$_sr_rc" -eq 0 ]; then
             _sr_ok=$((_sr_ok + 1))
