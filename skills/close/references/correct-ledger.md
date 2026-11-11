@@ -70,16 +70,17 @@ close 자신은 이 규약의 어느 쓰기도 하지 않는다 (NF-1).
 이 파일은 close 실행 때만 읽힌다. 규약은 매 세션 로드되는 dotfiles 전역
 [`claude/AGENTS.md`](https://github.com/dEitY719/dotfiles/blob/main/claude/AGENTS.md)
 (1순위 — 모든 하네스가 읽고 `/correct` 미설치 환경도 덮는다) 또는 `/correct`
-스킬 본문에 아래 블록으로 착지한다. 착지 전에는 원장이 사람이 지시할 때만
-채워진다 (dEitY719/session-skills#42).
+스킬 본문에 아래 블록으로 착지한다. 이 블록은 위 "작성자 규약"의 요약 사본이다
+— 규약을 고치면 블록도 같은 커밋에서 맞춘다. 착지 전에는 원장이 사람이 지시할
+때만 채워진다 (dEitY719/session-skills#42).
 
 ```markdown
 ## 반복 실수 원장 (session:close C-5)
 
-원장 경로는 손으로 만들지 말고 `bash <session:close 스킬 디렉터리>/lib/check-correct.sh --ledger-path <repo>` 로 얻는다. 디렉터리가 없으면 `mkdir -p`.
-1. 실수를 목격하면 `- [<ISO8601>] <class-slug>: <한 줄 설명>` 을 append 한다. 기존 줄은 고치지 않는다. 설명에 토큰·비밀값을 적지 않는다.
+원장 경로는 손으로 만들지 말고 `bash <session:close 스킬 디렉터리>/lib/check-correct.sh --ledger-path <현재 저장소 경로>` 로 얻는다. 디렉터리가 없으면 `mkdir -p`.
+1. 실수를 목격하면 `- [<ISO8601>] <class-slug>: <한 줄 설명>` 을 append 한다. class-slug 는 `[A-Za-z0-9._-]+` 만 쓴다. 기존 줄은 고치지 않는다. 설명에 토큰·비밀값을 적지 않는다.
 2. 같은 class-slug 2회차 -> 즉시 `/correct` 실행을 제안한다.
-3. `/session:close` 가 보고한 open 항목을 사용자 결정대로 전부 처리했거나 open 0건 + 규칙 테스트 확인이 끝났을 때만 `swept: <now> <HEAD-sha>` 를 append 한다.
+3. `swept: <now> <HEAD-sha>` 는 (a) `/session:close` 가 보고한 open 항목을 전부 해소했거나 (b) open 0건이고 규칙 테스트 확인이 끝났을 때만 append 한다. 사용자가 보류한 항목이 하나라도 있으면 찍지 않는다.
 ```
 
 ## 커밋 스윕 — Correction Rules 테스트
