@@ -188,22 +188,10 @@ sweep_rules() {
         return 0
     fi
 
-    _sr_k=0
-    _sr_l=0
-    _sr_tokens=""
-    while IFS= read -r _sr_row; do
-        _sr_k=$((_sr_k + 1))
-        # shellcheck disable=SC2016 # 백틱은 리터럴 패턴이다
-        _sr_t=$(printf '%s\n' "$_sr_row" | grep -o '`[^`]*\.bats`' | tr -d '`')
-        if [ -z "$_sr_t" ]; then
-            _sr_l=$((_sr_l + 1))
-        else
-            _sr_tokens="${_sr_tokens}${_sr_t}
-"
-        fi
-    done <<EOF
-$_sr_rows
-EOF
+    # shellcheck disable=SC2016 # 백틱은 리터럴 패턴이다
+    _sr_pat='`[^`]*\.bats`'
+    _sr_k=$(printf '%s\n' "$_sr_rows" | grep -c '')
+    _sr_l=$(printf '%s\n' "$_sr_rows" | grep -vc -- "$_sr_pat")
     if [ "$_sr_l" -gt 0 ]; then
         note "${_sr_top}: 규칙 ${_sr_k}개 중 ${_sr_l}개는 .bats 테스트 토큰이 없어 기계 검증 불가"
     fi
@@ -223,7 +211,7 @@ EOF
         _sr_paths="${_sr_paths}${_sr_m}
 "
     done <<EOF
-$(printf '%s' "$_sr_tokens" | awk 'NF && !seen[$0]++')
+$(printf '%s\n' "$_sr_rows" | grep -o -- "$_sr_pat" | tr -d '`' | awk 'NF && !seen[$0]++')
 EOF
     _sr_paths=$(printf '%s' "$_sr_paths" | awk 'NF && !seen[$0]++')
     [ -n "$_sr_paths" ] || return 0
@@ -282,7 +270,7 @@ check_repo() {
     printf 'REPO: %s\n' "$_ck_top"
 
     # --- 1. 원장 open 항목 ---------------------------------------------------
-    _ck_ledger=$(ledger_path "$_ck_repo" || printf '')
+    _ck_ledger=$(ledger_path "$_ck_repo")
     _ck_ts=""
     _ck_sha=""
     if [ -z "$_ck_ledger" ] || [ ! -f "$_ck_ledger" ]; then
