@@ -1,7 +1,7 @@
 ---
 name: close
 description: >-
-  세션 종료 전 남은 작업을 4개 항목으로 감사해 `[OK]`/`[BLOCKED]` 판정만 내리는 read-only 스킬 — 저장소를
+  세션 종료 전 남은 작업을 5개 항목으로 감사해 `[OK]`/`[BLOCKED]` 판정만 내리는 read-only 스킬 — 저장소를
   전혀 바꾸지 않고, 그린이면 `/exit` 안내만 한다(대신 실행하지 않는다). Use for /session:close, "세션
   닫아도 되나", "audit this session before I close it". 인계는 session:handoff.
 allowed-tools: Bash, Read, Grep, TaskList
@@ -29,6 +29,7 @@ If arg #1 is `-h`/`--help`/`help`, output `references/help.md` verbatim and stop
 | Option | Description | Default |
 |---|---|---|
 | `--repos <path,...>` | 자동 수집이 놓친 저장소를 보탠다(치환 아님) | 없음 — Step 2 가 대화에서 자동 수집 |
+| `--run-rule-tests` | C-5 규칙 테스트를 실제로 실행한다(opt-in) | 끔 — 명령만 출력 |
 | `-h`/`--help`/`help` | 위 Help 출력 후 정지 | — |
 
 ## Step 2: 대상 저장소 수집 (F-2, 판단)
@@ -40,15 +41,12 @@ If arg #1 is `-h`/`--help`/`help`, output `references/help.md` verbatim and stop
    그대로 쓴다(추측 금지).
 3. `--repos` 로 받은 경로.
 
-cwd 하나만 보고 끝내지 않는다 — 워크트리 여러 개가 기본이다. 목록이 0개면
-Step 3 를 건너뛰지 말고 그대로 넘겨라. 스크립트가 "검사 대상 없음" 을 명시한다 (NF-6).
+cwd 하나만 보고 끝내지 않는다 — 워크트리 여러 개가 기본이다. 목록이 0개여도 Step 3 를
+건너뛰지 말고 그대로 넘겨라. 스크립트가 "검사 대상 없음" 을 명시한다 (NF-6).
 
 ## Step 3: C-1 git 상태 (F-3)
 
-```
-bash "${SKILL_DIR}/lib/check-repos.sh" <repo> [repo...]
-```
-
+`bash "${SKILL_DIR}/lib/check-repos.sh" <repo> [repo...]`
 출력의 `BLOCKED:` / `NOTE:` / `WARN:` 줄을 그대로 집계한다. 판정 규칙과
 NF-4 강등(사내PC + github.com 원격 → 원격 미반영 커밋은 NOTE)은
 `references/checks.md` 에 있다.
@@ -61,10 +59,7 @@ NF-4 강등(사내PC + github.com 원격 → 원격 미반영 커밋은 NOTE)은
 
 ## Step 5: C-3 임시 산출물 (F-5)
 
-```
-bash "${SKILL_DIR}/lib/check-artifacts.sh" --scratchpad <this session's scratchpad> <repo>...
-```
-
+`bash "${SKILL_DIR}/lib/check-artifacts.sh" --scratchpad <this session's scratchpad> <repo>...`
 scratchpad 경로는 세션이 시스템 프롬프트로 받은 값을 그대로 넘긴다. 없으면 `--scratchpad` 를 생략한다. 결과는 전부 NOTE 다.
 
 ## Step 6: C-4 산출물 후속 (F-6)
@@ -72,29 +67,33 @@ scratchpad 경로는 세션이 시스템 프롬프트로 받은 값을 그대로
 이번 세션이 만든 이슈/PR 번호가 대화에 있으면
 `gh issue view <N> --json state,title` / `gh pr view <N> --json state,title`
 로 상태만 확인한다. 실패는 `[WARN]` 한 줄로 낮추고 판정을 뒤집지 않는다
-(NF-3). 번호가 없으면 호출하지 않는다.
+(NF-3). 번호가 없으면 호출하지 않는다. 백그라운드 작업·서브에이전트는 검사하지
+못한다 — 경고 한 줄만 남긴다 (`references/checks.md` 의 Open Question).
 
-실행중인 백그라운드 작업·서브에이전트는 **검사하지 못한다** — 열거할 확인된
-수단이 없다. 경고 한 줄만 남긴다 (`references/checks.md` 의 Open Question).
+## Step 7: C-5 반복 실수 원장 스윕
 
-## Step 7: 판정과 출력 (F-7~F-9)
+`bash "${SKILL_DIR}/lib/check-correct.sh" [--run-rule-tests] <repo>...` — 원장 open
+항목과 마지막 스윕 이후 커밋의 Correction Rules 테스트를 본다. 결과는 NOTE/WARN 뿐이다.
+원장 규약은 `references/correct-ledger.md`, 판정 표는 `references/checks.md`.
 
-`references/report.md` 의 형식으로 C-1~C-4 리포트를 찍고, **마지막 두 줄**에
+## Step 8: 판정과 출력 (F-7~F-9)
+
+`references/report.md` 의 형식으로 C-1~C-5 리포트를 찍고, **마지막 두 줄**에
 `[OK]`/`[BLOCKED]` 판정과 `Next:` 한 줄만 남긴다. BLOCKED 의 원인이 미완
-작업이면 `Next:` 는 session:handoff 를 가리킨다.
+작업이면 `Next:` 는 session:handoff 를, `[OK]` 인데 C-5 `[RULE-FAIL]` 이 있으면 재현 명령을 가리킨다.
 
 ## Constraints
 
-- read-only 전용 — 파일을 만들거나 고치거나 지우지 않고, git 상태를 바꾸지
-  않으며, 원격에 아무것도 보내지 않는다. 조치 명령은 출력만 하고 실행 여부는
-  사용자가 정한다 (NF-1).
+- read-only 전용 — 파일을 만들거나 고치거나 지우지 않고, git 상태를 바꾸지 않으며, 원격에
+  아무것도 보내지 않는다. 조치 명령은 출력만 하고 실행 여부는 사용자가 정한다 (NF-1).
 - `/exit` 를 대신 실행하지 않는다. 프로세스를 강제로 끝내지도, 대화 종료
   도구를 부르지도 않는다 — 안내 문자열만 찍는다 (NF-2).
 - 네트워크는 C-4 만 쓴다 (NF-3). 잔여 작업을 대신 처리하지 않는다.
+- 원장·상태 파일을 쓰지 않고, 규칙 테스트는 `--run-rule-tests` 없이 실행하지
+  않는다. `swept:` 마커는 사용자가 open 항목을 처리한 뒤 호출 에이전트가 찍는다.
 
 ## Related Skills
 
-같은 "세션 끝" 자리, 다른 동사 — `session:handoff` (미완 작업을 이슈
-코멘트로 인계) · `session:restart` (중단된 작업을 이어서 재개) ·
-`notes:task-history` / `pkm:obsidian-clip-session` (세션 기록 남기기).
-본 스킬은 감사만 하고 저장소를 바꾸지 않는다.
+같은 "세션 끝" 자리, 다른 동사 — `session:handoff` (미완 작업을 이슈 코멘트로 인계) ·
+`session:restart` (중단된 작업 재개) · `notes:task-history` / `pkm:obsidian-clip-session`
+(세션 기록 남기기). 본 스킬은 감사만 하고 저장소를 바꾸지 않는다.
