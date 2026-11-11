@@ -43,7 +43,7 @@ up front, and do not reimplement `lib/` in prose.
   list, so see the gaps below.
 - **`handoff`** needs `gh` authenticated against the tracking issue's repo, and
   a writable agent-memory location.
-- **`close`** needs `bash` for its two `lib/` scripts and, optionally, `gh` to
+- **`close`** needs `bash` for its three `lib/` scripts and, optionally, `gh` to
   check the state of issues and PRs this session created.
 - **`rate-limit-guard`, `resume-after-limit`, `schedule`** need Claude Code's
   `CronCreate` / `CronDelete`. There is no Gemini equivalent.

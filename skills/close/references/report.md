@@ -1,12 +1,12 @@
 # 출력 형식
 
-리포트는 두 부분이다. 위쪽은 C-1~C-4 근거이고, 아래쪽 **마지막 두 줄**이
+리포트는 두 부분이다. 위쪽은 C-1~C-5 근거이고, 아래쪽 **마지막 두 줄**이
 UX 전부다. 사용자는 대개 두 줄만 읽는다 — 그 두 줄만으로 다음 행동이
 결정되어야 한다.
 
 ## 본문
 
-항목 순서는 항상 C-1 → C-2 → C-3 → C-4 로 고정한다. 항목마다 결과가
+항목 순서는 항상 C-1 → C-2 → C-3 → C-4 → C-5 로 고정한다. 항목마다 결과가
 없어도 줄을 지우지 말고 "없음" 을 찍는다 (NF-6).
 
 ```
@@ -28,7 +28,16 @@ UX 전부다. 사용자는 대개 두 줄만 읽는다 — 그 두 줄만으로 
 ## C-4 산출물 후속
 [NOTE]    issue #1327 open — 아직 닫히지 않음
 [WARN]    실행중인 백그라운드 작업·서브에이전트는 검사하지 못했다 — 열거 수단 미확정
+
+## C-5 반복 실수 원장 스윕
+[NOTE]    /home/bwyoon/dotfiles: 'gh-guard-adhoc-matcher' 2회 재발 — /correct 실행 후보
+[NOTE]    /home/bwyoon/dotfiles: 'bats-env-leak' 1회 목격 — 단발, 버릴 후보
+[NOTE]    /home/bwyoon/dotfiles: 새 커밋 3건 — 규칙 테스트 확인: (cd /home/bwyoon/dotfiles && bats tests/bats/functions/gh_host.bats)
+[NOTE]    /home/bwyoon/other-repo: 스윕 이력 없음 — 첫 실행, 기준선 HEAD 에서 규칙 테스트 확인
 ```
+
+C-5 의 `NOTE: [RULE-FAIL] ...` 줄은 `[NOTE]    [RULE-FAIL] ...` 로 그대로
+옮긴다 — 표지를 지우지 않는다. C-5 의 NOTE/WARN 은 판정을 뒤집지 않는다.
 
 검사 대상 저장소가 0개일 때는 C-1/C-3 자리에 다음을 찍는다. 아무것도
 검사하지 않고 `[OK]` 를 내면 안 된다 (NF-6).
@@ -63,8 +72,16 @@ Next: git -C /home/bwyoon/dotfiles status   # 미커밋 3건 확인
   커밋 > `in_progress` todo.
 - 명령 뒤에 `#` 주석으로 무엇을 확인하라는 것인지 한 조각 붙인다.
 - 조치 명령은 **출력만** 한다. 대신 실행하지 않는다 (NF-1).
-- `[OK]` 일 때의 `Next:` 는 언제나 `/exit` 한 줄이다. 대신 실행하지 않는다
-  — 안내 문자열일 뿐이다 (NF-2).
+- `[OK]` 일 때의 `Next:` 는 `/exit` 한 줄이다. 대신 실행하지 않는다
+  — 안내 문자열일 뿐이다 (NF-2). 단 하나의 예외: C-5 에 `[RULE-FAIL]` 이
+  있으면 판정은 `[OK]` 그대로 두고 `Next:` 만 실패 테스트 재현 명령으로
+  바꾼다. 사용자는 마지막 두 줄만 읽으므로, `/exit` 를 내면 위반 착지 신호가
+  묻힌다.
+
+```
+[OK] 남은 작업 없음 — 세션을 닫아도 됩니다
+Next: (cd /home/bwyoon/dotfiles && bats tests/bats/functions/gh_host.bats)   # C-5 RULE-FAIL — /correct 또는 revert 검토
+```
 
 ### F-9 handoff 연결
 

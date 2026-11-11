@@ -13,7 +13,7 @@ moments a session stalls, ends, or needs a workspace of its own:
 | Skill | Fires when | Role |
 |-------|-----------|------|
 | `restart` | A turn died and the session is still alive | Picks the resume target off the TodoList, corroborates it against `git status`, and resumes in single-tool-call chunks with big reads pushed to subagents. |
-| `close` | The user wants to stop | Read-only audit of four categories of leftover work; prints `[OK]` or `[BLOCKED]` and one `Next:` line. Changes nothing. |
+| `close` | The user wants to stop | Read-only audit of five categories of leftover work; prints `[OK]` or `[BLOCKED]` and one `Next:` line. Changes nothing. |
 | `handoff` | Context is nearly full, work is unfinished | Resolves the tracking issue, posts a structured handoff comment, writes an agent-local memory file, prints a copy-paste resume sentence. |
 | `rate-limit-guard` | Before a long unattended run | Arms a durable one-shot cron at the token-limit reset time and persists `.claude/.rate-limit-guard.json`. |
 | `resume-after-limit` | The reset arrives | What that cron invokes: reads the state file, verifies the worktree, pre-arms the next cycle, re-runs the wrapped command. |
@@ -130,7 +130,7 @@ should apply here on the next run, which is the whole point.
   1,024. The nine here total roughly 2,100, so there is room; spend it on
   trigger phrases, not prose.
 - **`lib/*.sh` is the contract, not a suggestion.** `check-repos.sh`,
-  `check-artifacts.sh`, and `_repo_common.sh` hold the deterministic half of
+  `check-artifacts.sh`, `check-correct.sh`, and `_repo_common.sh` hold the deterministic half of
   `session:close`. Call them and surface their `BLOCKED:` / `NOTE:` / `WARN:`
   lines verbatim. Never reimplement their logic in prose, and never swallow a
   warning to keep an exit code clean. CI shellchecks them at
@@ -147,7 +147,12 @@ These are acceptance criteria carried over from dotfiles, not advice:
   It prints remediation commands; the user decides whether to run them. It never
   calls `/exit` on the user's behalf: there is no path from a skill to that
   built-in, and force-killing the process would skip transcript cleanup. Print
-  the suggestion and stop.
+  the suggestion and stop. C-5 (`lib/check-correct.sh`) reads a correction
+  ledger kept outside the repo and never writes it or creates its directory;
+  it prints the Correction Rules test command rather than running it. The one
+  sanctioned exception is the user's explicit `--run-rule-tests`, which runs
+  each `.bats` file under `timeout 60` and WARNs if `git status` changed. C-5
+  never emits `BLOCKED:`.
 - **`session:handoff` writes exactly two artifacts**: one issue comment
   (skippable with `--memory-only`) and one memory file. No commits, no pushes,
   no code edits, no issue state changes. Only merged PRs and tests that ran

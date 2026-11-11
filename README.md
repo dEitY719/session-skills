@@ -20,7 +20,7 @@ this repo owns no shared assets — it links out for the
 | Skill | Invoke | What it does |
 |-------|--------|--------------|
 | `restart` | `/session:restart` | Resumes a turn that died to an API error, an OOM, an auth expiry, or an ESC — same session, no cron. Picks the resume target off the TodoList, corroborates it against `git status`, then works in single-tool-call chunks with big reads delegated to subagents. |
-| `close` | `/session:close [--repos <path,...>]` | Audits four categories of leftover work across every repo the session touched and prints `[OK]` or `[BLOCKED]` plus one `Next:` line. **Strictly read-only** — it never changes a file, a git state, or a remote, and never runs `/exit` for you. |
+| `close` | `/session:close [--repos <path,...>]` | Audits five categories of leftover work (C-5: an out-of-repo correction ledger plus Correction Rules test commands) across every repo the session touched and prints `[OK]` or `[BLOCKED]` plus one `Next:` line. **Strictly read-only** — it never changes a file, a git state, or a remote, and never runs `/exit` for you. |
 | `handoff` | `/session:handoff [issue] [remote] [--memory-only] [--new-issue]` | Writes *unfinished* work into a tracking-issue comment and an agent-local memory file, then prints a copy-paste resume sentence. Exactly two writes; nothing is committed or pushed. |
 | `rate-limit-guard` | `/session:rate-limit-guard --reset HH:MM [--max-cycles N] [--cycle-window M] <command>` | **[Claude Code only]** Arms a durable one-shot cron for `reset + 5min`, persists `.claude/.rate-limit-guard.json`, runs the wrapped command, and tears the safety net down on success. |
 | `resume-after-limit` | `/session:resume-after-limit [<command>]` | **[Claude Code only]** What that cron invokes. Reads the state file, stops hard on a worktree mismatch, pre-arms the next cycle, re-runs the wrapped command, cleans up on success. |
@@ -63,7 +63,7 @@ its `Next:` line points at `handoff`.
 | Skill | Needs |
 |-------|-------|
 | `restart` | Claude Code's `TaskList` / `TaskUpdate` (the session TodoList) and a subagent dispatch tool. Degrades elsewhere — see [Harness support](#harness-support). |
-| `close` | `bash` for its two `lib/` scripts; `git` in each audited repo; optionally `gh` for the C-4 issue/PR status check and `TaskList` for C-2. |
+| `close` | `bash` for its three `lib/` scripts; `git` in each audited repo; optionally `gh` for the C-4 issue/PR status check, `TaskList` for C-2, and `bats` + `timeout` for C-5's opt-in `--run-rule-tests`. |
 | `handoff` | `gh`, authenticated against the tracking issue's repo; a writable agent-memory location. `TaskList` is used when present. |
 | `rate-limit-guard` | Claude Code's `CronCreate` / `CronDelete`, `python3`, and a session left open (or reopened) in the same worktree so the durable cron can fire. Run `/usage` first to learn your reset time. |
 | `resume-after-limit` | The same, plus `.claude/.rate-limit-guard.json` written by the guard — or an explicit `<command>` argument. |
