@@ -47,8 +47,8 @@ swept: 2026-11-11T18:00:00+09:00 3f2c1a9e0b7d4c5a6f8e9d0c1b2a3f4e5d6c7b8a
   pull 한 커밋을 놓치므로 기준이 아니다. sha 에 도달할 수 없으면(rebase,
   force-push) WARN 한 줄과 함께 `--since <ts>` 로 폴백한다. sha 없는
   `swept: <ts>` 도 읽지만 `--since` 로만 센다.
-- 빈 줄과 `#` 헤딩 줄은 무시한다. 그 밖의 줄은 파싱 불가 WARN 으로 보고되고
-  나머지 줄은 정상 처리된다.
+- 빈 줄과 `#` 헤딩 줄은 무시한다. 마지막 마커 아래의 그 밖의 줄은 파싱 불가
+  WARN 으로 보고되고 나머지 줄은 정상 처리된다(마커 위 줄은 처리 완료라 무시).
 - **시크릿 금지** — 설명에 토큰·비밀값 자체를 적지 않는다.
 
 ## 작성자 규약 (모든 세션의 에이전트)
@@ -78,8 +78,11 @@ close 자신은 이 규약의 어느 쓰기도 하지 않는다 (NF-1). 이 규�
 - 토큰은 중복 제거 후 해석한다. 경로(`/` 포함)면 `git ls-files` 경로 일치,
   아니면 basename 정확 일치(`:(glob)**/<token>`). 0 매치는 WARN, 2+ 매치는
   전부 대상이다. `T18-T25` 같은 범위 표기는 무시하고 파일 단위로 다룬다.
-- **기본은 실행하지 않는다.** `(cd <repo> && bats <path...>)` 명령을 NOTE 로
-  찍는다. 저장소 테스트 실행은 임의 코드 실행이라 read-only 계약 밖이다.
+- 새 커밋은 스윕을 켜는 게이트일 뿐, 커밋이 건드린 파일로 대상을 좁히지 않는다.
+- **기본은 실행하지 않는다.** `(cd <repo> && bats <path...>)` 명령(경로는 셸
+  인용)을 NOTE 로 찍는다. 저장소 테스트 실행은 임의 코드 실행이라 read-only 계약
+  밖이다. 이 모드는 dirty tree 여도 명령을 찍는다.
 - `--run-rule-tests` (사용자 opt-in) 일 때만 실행한다. 파일당 `timeout 60`,
-  실행 전후 `git status --porcelain --untracked-files=all` 을 비교해 달라졌으면
-  WARN. 실패는 `NOTE: [RULE-FAIL] ...` 다.
+  dirty tree 면 건너뛰고(WARN), 실행 전후 `git status --porcelain
+  --untracked-files=all` 을 비교해 달라졌으면 WARN. 실패는 `NOTE: [RULE-FAIL] ...`
+  다. 해석 실패 토큰이 하나라도 있으면 PASS 줄을 찍지 않는다.

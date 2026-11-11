@@ -83,6 +83,7 @@ lb=$(ledger_of "$b")
 mkdir -p "$(dirname "$lb")"
 cat >"$lb" <<EOF
 - [2026-11-01T10:00:00+09:00] old-class: handled before the sweep
+garbage above the marker is already handled
 swept: 2026-11-02T10:00:00+09:00 $(head_of "$b")
 - [2026-11-11T14:30:00+09:00] gh-guard-adhoc-matcher: inline glob again
 this line is not a ledger entry
@@ -96,7 +97,8 @@ check "(b) exit 0" "0" "$?"
 has "(b) single NOTE" "NOTE: $b: 'bats-env-leak' 1회 목격 — 단발, 버릴 후보" "$out"
 has "(c) recurrence NOTE" "NOTE: $b: 'gh-guard-adhoc-matcher' 2회 재발 — /correct 실행 후보" "$out"
 lacks "(d) swept entry excluded" "old-class" "$out"
-has "(i) bad line WARN" "WARN: $b: 원장 4행 파싱 불가 — 제외" "$out"
+has "(i) bad line WARN" "WARN: $b: 원장 5행 파싱 불가 — 제외" "$out"
+lacks "(i) bad line above marker ignored" "원장 2행" "$out"
 has "(b) no new commits since sha" "PASS: $b: 새 커밋 0건" "$out"
 check "(j) ledger content+mtime unchanged" "$before" "$(cat "$lb"; stat -c %Y "$lb")"
 check "(k) untracked count unchanged" "$untracked_before" \
@@ -166,15 +168,44 @@ check "(g) run exit 0" "0" "$?"
 check "(g) bats calls: dedup + 2 matches" "tests/a/gh_host.bats
 tests/b/gh_host.bats
 tests/x/env.bats" "$(cat "$tmp/bats.log")"
-has "(g) PASS line" "PASS: $g: 새 커밋 1건, 규칙 테스트 3개 통과 (규칙 5개 중 1개 기계 검증 불가)" "$out"
+lacks "(g) unresolved token blocks PASS" "PASS: $g: 새 커밋" "$out"
 
 echo tests/x/env.bats >"$tmp/bats.fail"
 out=$(run --run-rule-tests "$g")
 check "(g) RULE-FAIL exit 0" "0" "$?"
 has "(g) RULE-FAIL NOTE" "NOTE: [RULE-FAIL] $g: 규칙 테스트 실패 (tests/x/env.bats) — 위반 커밋이 이미 착지했을 수 있다. /correct 또는 revert 검토" "$out"
-lacks "(g) no PASS on failure" "규칙 테스트 3개 통과" "$out"
+lacks "(g) no PASS on failure" "PASS: $g: 새 커밋" "$out"
 lacks "(g) RULE-FAIL never BLOCKED" "BLOCKED" "$out"
 rm -f "$tmp/bats.fail"
+
+# PASS path, a repo path with a space (quoted command), a fenced `# comment`
+# inside the section, and the flag after the repo argument.
+p="$tmp/p q"
+mkrepo "$p"
+mkdir -p "$p/tests"
+echo '@test t { true; }' >"$p/tests/ok.bats"
+cat >"$p/CLAUDE.md" <<'EOF'
+## Correction Rules
+
+```bash
+# not a heading
+```
+
+| Rule | Enforcement |
+|---|---|
+| ok rule | `ok.bats` |
+EOF
+git -C "$p" add .
+gitc -C "$p" commit -q -m rules
+echo "swept: 2026-01-01T00:00:00+09:00 $(git -C "$p" rev-parse HEAD~1)" >"$(ledger_of "$p")"
+out=$(run "$p")
+has "quoted command" "규칙 테스트 확인: (cd $tmp/p\ q && bats tests/ok.bats)" "$out"
+echo dirty >>"$p/CLAUDE.md"
+out=$(run "$p")
+has "dirty tree default mode still prints" "규칙 테스트 확인: (cd $tmp/p\ q && bats tests/ok.bats)" "$out"
+git -C "$p" checkout -q -- CLAUDE.md
+out=$(run "$p" --run-rule-tests)
+has "flag after repo + PASS line" "PASS: $p: 새 커밋 1건, 규칙 테스트 1개 통과 (규칙 1개 중 0개 기계 검증 불가)" "$out"
 
 # bats missing -> WARN (PATH without the stub or a real bats)
 nobats=$tmp/nobats
@@ -204,8 +235,9 @@ check "worktree shares ledger" "$lg" "$(ledger_of "$tmp/g-wt")"
 mkdir -p "$tmp/s/a_b/c" "$tmp/s/a/b_c"
 mkrepo "$tmp/s/a_b/c"
 mkrepo "$tmp/s/a/b_c"
-[ "$(ledger_of "$tmp/s/a_b/c")" != "$(ledger_of "$tmp/s/a/b_c")" ]
-check "slug injective" "0" "$?"
+inj=same
+[ "$(ledger_of "$tmp/s/a_b/c")" = "$(ledger_of "$tmp/s/a/b_c")" ] || inj=distinct
+check "slug injective" "distinct" "$inj"
 
 # --- (l) bad targets ---------------------------------------------------------
 mkdir "$tmp/plain"
