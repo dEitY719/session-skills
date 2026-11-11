@@ -86,7 +86,7 @@ ledger_path() {
 }
 
 # parse_ledger <file> — 원장을 읽어 다음 줄들을 찍는다.
-#   BAD <line-no>            파싱 불가 줄
+#   BAD <line-no>            마지막 마커 아래의 파싱 불가 줄(위쪽은 처리 완료라 무시)
 #   MARK <ts> [<sha>]        마지막 swept: 마커
 #   OPEN <count> <class>     마지막 마커 아래 항목, 첫 등장 순서
 # 빈 줄과 `#` 헤딩 줄은 무시한다.
@@ -96,7 +96,7 @@ parse_ledger() {
         /^swept: [^ \t]+([ \t]+[0-9a-fA-F]+)?[ \t]*$/ {
             mark = $2; msha = (NF >= 3 ? $3 : "")
             for (k in cnt) delete cnt[k]
-            n = 0
+            n = 0; nb = 0
             next
         }
         /^- \[[^]]+\] [A-Za-z0-9._-]+: ./ {
@@ -107,8 +107,9 @@ parse_ledger() {
             cnt[s]++
             next
         }
-        { print "BAD " NR }
+        { bad[++nb] = NR }
         END {
+            for (i = 1; i <= nb; i++) print "BAD " bad[i]
             if (mark != "") print "MARK " mark (msha != "" ? " " msha : "")
             for (i = 1; i <= n; i++) print "OPEN " cnt[order[i]] " " order[i]
         }
@@ -117,9 +118,11 @@ parse_ledger() {
 
 # rule_rows <file> — Correction Rules 섹션(어느 헤딩 레벨이든, 같거나 높은
 # 레벨의 다음 헤딩까지) 안 표의 데이터 행만 찍는다. 헤더 행과 구분 행은 뺀다.
-# 섹션이 없으면 1 을 돌려준다.
+# 코드 펜스 안의 `#` 줄은 헤딩이 아니다. 섹션이 없으면 1 을 돌려준다.
 rule_rows() {
     awk '
+        /^[ \t]*(```|~~~)/ { infence = !infence; intable = 0; next }
+        infence { next }
         /^#+[ \t]/ {
             lvl = match($0, /[^#]/) - 1
             if (insec && lvl <= seclvl) insec = 0
@@ -198,6 +201,7 @@ sweep_rules() {
 
     # 토큰 해석: 경로가 들어 있으면 경로 일치, 아니면 basename 정확 일치.
     _sr_paths=""
+    _sr_unres=0
     while IFS= read -r _sr_tok; do
         [ -n "$_sr_tok" ] || continue
         case "$_sr_tok" in
@@ -206,6 +210,7 @@ sweep_rules() {
         esac
         if [ -z "$_sr_m" ]; then
             warn "${_sr_top}: '${_sr_tok}' 해석 실패"
+            _sr_unres=$((_sr_unres + 1))
             continue
         fi
         _sr_paths="${_sr_paths}${_sr_m}
@@ -217,8 +222,15 @@ EOF
     [ -n "$_sr_paths" ] || return 0
 
     if [ "$RUN_TESTS" -eq 0 ]; then
-        _sr_cmd=$(printf '%s\n' "$_sr_paths" | tr '\n' ' ')
-        note "${_sr_top}: ${_sr_scope} — 규칙 테스트 확인: (cd ${_sr_top} && bats ${_sr_cmd% })"
+        # 복사해 실행할 명령이므로 공백·메타문자가 든 경로도 셸 인용한다.
+        _sr_cmd=$(printf '%s\n' "$_sr_paths" | while IFS= read -r _sr_p; do printf ' %q' "$_sr_p"; done)
+        note "${_sr_top}: ${_sr_scope} — 규칙 테스트 확인: (cd $(printf '%q' "$_sr_top") &&${_sr_cmd:+ bats}${_sr_cmd})"
+        return 0
+    fi
+
+    # 실행 전후 git status 비교가 의미를 가지려면 시작 트리가 깨끗해야 한다.
+    if [ -n "$(git -C "$_sr_top" status --porcelain --untracked-files=all 2>/dev/null)" ]; then
+        warn "${_sr_top}: dirty tree — 규칙 테스트 스윕 건너뜀 (C-1 부터 해결)"
         return 0
     fi
 
@@ -254,7 +266,7 @@ EOF
     if [ "$_sr_before" != "$_sr_after" ]; then
         warn "${_sr_top}: 규칙 테스트가 작업 트리를 바꿨다 — git -C ${_sr_top} status 확인"
     fi
-    if [ "$_sr_bad" -eq 0 ]; then
+    if [ "$_sr_bad" -eq 0 ] && [ "$_sr_unres" -eq 0 ]; then
         pass "${_sr_top}: ${_sr_scope}, 규칙 테스트 ${_sr_ok}개 통과 (규칙 ${_sr_k}개 중 ${_sr_l}개 기계 검증 불가)"
     fi
 }
@@ -311,11 +323,6 @@ EOF
         pass "${_ck_top}: 새 커밋 0건"
         return 0
     fi
-
-    if [ -n "$(git -C "$_ck_repo" status --porcelain --untracked-files=all 2>/dev/null)" ]; then
-        warn "${_ck_top}: dirty tree — 규칙 테스트 스윕 건너뜀 (C-1 부터 해결)"
-        return 0
-    fi
     sweep_rules "$_ck_top" "$_ck_scope"
 }
 
@@ -330,11 +337,14 @@ main() {
             ledger_path "$2" || { printf 'git 저장소가 아니다: %s\n' "$2" >&2; return 2; }
             return 0
             ;;
-        --run-rule-tests)
-            RUN_TESTS=1
-            shift
-            ;;
     esac
+
+    # --run-rule-tests 는 어느 위치에 와도 플래그다 — 저장소 경로로 오인하지 않는다.
+    _m_repos=()
+    for _m_arg in "$@"; do
+        if [ "$_m_arg" = "--run-rule-tests" ]; then RUN_TESTS=1; else _m_repos+=("$_m_arg"); fi
+    done
+    set -- "${_m_repos[@]+"${_m_repos[@]}"}"
 
     if [ "$#" -eq 0 ]; then
         printf '검사 대상 없음 — 감사할 저장소가 0개다 (NF-6)\n'

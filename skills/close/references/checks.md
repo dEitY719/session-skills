@@ -125,23 +125,26 @@ F-7 은 그것을 BLOCKED 로 분류한다. 그러나 **스킬 안에서 그것�
 | 마커 아래 open 항목 0건 | `원장 open 항목 0건` | PASS |
 | open 중 같은 class ≥2회 | `'<class>' N회 재발 — /correct 실행 후보` | NOTE |
 | open 중 class 1회 | `'<class>' 1회 목격 — 단발, 버릴 후보` | NOTE |
-| 원장 줄 파싱 불가 | `원장 <L>행 파싱 불가 — 제외` (나머지 줄은 정상 처리) | WARN |
+| 마지막 마커 아래 원장 줄 파싱 불가 | `원장 <L>행 파싱 불가 — 제외` (나머지 줄은 정상 처리, 마커 위 줄은 처리 완료라 무시) | WARN |
 | 커밋이 하나도 없음 | `커밋이 하나도 없다 — 커밋 스윕 건너뜀` | WARN |
 | `swept:` 마커 없음 | `스윕 이력 없음 — 첫 실행, 기준선 HEAD 에서 규칙 테스트 확인` | NOTE (스윕은 계속) |
 | 마커 sha 에 도달 불가 | `스윕 기준 커밋 <sha> 에 도달할 수 없다 (rebase/force-push?) — --since 로 폴백` | WARN |
 | 마지막 스윕 이후 새 커밋 0건 | `새 커밋 0건` | PASS |
-| 새 커밋 + dirty tree | `dirty tree — 규칙 테스트 스윕 건너뜀 (C-1 부터 해결)` | WARN |
 | Correction Rules 섹션 없음 | `<범위> — 규칙 테스트 정의 없음 (AGENTS.md/CLAUDE.md)` | NOTE |
 | `.bats` 토큰 없는 규칙 행 | `규칙 K개 중 L개는 .bats 테스트 토큰이 없어 기계 검증 불가` | NOTE |
 | 토큰 0 매치 | `'<token>' 해석 실패` | WARN |
 | 기본 (실행 안 함) | `<범위> — 규칙 테스트 확인: (cd <repo> && bats <path...>)` | NOTE |
+| `--run-rule-tests` + dirty tree | `dirty tree — 규칙 테스트 스윕 건너뜀 (C-1 부터 해결)` | WARN |
 | `--run-rule-tests` + bats/timeout 없음 | `bats 미설치 — 테스트 스윕 불가` | WARN |
 | `--run-rule-tests` + 시간 초과(60s) | `'<path>' 시간 초과 (60s)` | WARN |
 | `--run-rule-tests` + 작업 트리 변화 | `규칙 테스트가 작업 트리를 바꿨다` | WARN |
-| `--run-rule-tests` + 통과 | `<범위>, 규칙 테스트 M개 통과 (규칙 K개 중 L개 기계 검증 불가)` | PASS |
+| `--run-rule-tests` + 전부 통과, 해석 실패 토큰 0개 | `<범위>, 규칙 테스트 M개 통과 (규칙 K개 중 L개 기계 검증 불가)` | PASS |
 | `--run-rule-tests` + 실패 | `NOTE: [RULE-FAIL] ... 규칙 테스트 실패 (<path>) — 위반 커밋이 이미 착지했을 수 있다. /correct 또는 revert 검토` | NOTE |
 
-`<범위>` 는 `새 커밋 N건` 또는 (마커 없음) `기준선 HEAD` 다. 마커가 없어도
+`<범위>` 는 `새 커밋 N건` 또는 (마커 없음) `기준선 HEAD` 다. 새 커밋은 스윕을
+켜는 게이트일 뿐이다 — 그 커밋이 건드린 파일과 무관하게 규칙 테스트 전부를 HEAD
+에서 확인한다(파일 단위 bats 실행은 초 단위라 좁힐 이유가 없다). 출력 명령의
+경로는 `printf %q` 로 셸 인용된다. 섹션 안 코드 펜스의 `#` 줄은 헤딩으로 보지 않는다. 마커가 없어도
 스윕을 건너뛰지 않는 이유: 원장에 기록이 한 번도 없는 저장소에는 마커를 찍을
 계기가 없어, 건너뛰면 커밋 스윕이 영원히 꺼진다.
 
